@@ -6,9 +6,9 @@ import (
 	"io"
 	"net/http"
 
-	"app/middleware"
-	"app/models"
-	"app/utils"
+	"backend/middleware"
+	"backend/models"
+	"backend/utils"
 )
 
 // Open Food Facts API response

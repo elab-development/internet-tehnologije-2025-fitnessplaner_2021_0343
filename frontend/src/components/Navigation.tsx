@@ -31,6 +31,9 @@ const Navigation: React.FC = () => {
                 <Link to="/progress" className="text-gray-700 hover:text-purple-600 transition-colors">
                   Progress
                 </Link>
+                <Link to="/videos" className="text-gray-700 hover:text-purple-600 transition-colors">
+                  Videos
+                </Link>
                 <Link to="/profile" className="text-gray-700 hover:text-purple-600 transition-colors">
                   Profile
                 </Link>

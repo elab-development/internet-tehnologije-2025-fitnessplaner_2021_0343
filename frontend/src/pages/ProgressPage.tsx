@@ -28,11 +28,25 @@ const ProgressPage: React.FC = () => {
   const fetchProgress = async () => {
     try {
       setLoading(true);
-      const data = await progressAPI.getAll();
-      setProgressList(data);
       setError('');
+      const data = await progressAPI.getAll();
+      setProgressList(data || []);
     } catch (err: any) {
-      setError(err.response?.data || err.message || 'Failed to fetch progress');
+      console.error('Error fetching progress:', err);
+      // Handle JSON error response from backend
+      const errorData = err.response?.data;
+      let errorMessage = 'Failed to fetch progress';
+      if (errorData?.message) {
+        errorMessage = errorData.message;
+      } else if (errorData?.error) {
+        errorMessage = errorData.error;
+      } else if (typeof errorData === 'string') {
+        errorMessage = errorData;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
+      setProgressList([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -89,7 +103,15 @@ const ProgressPage: React.FC = () => {
       handleCloseModal();
       fetchProgress();
     } catch (err: any) {
-      setError(err.response?.data || err.message || 'Failed to save progress');
+      // Handle JSON error response from backend
+      const errorData = err.response?.data;
+      if (errorData?.message) {
+        setError(errorData.message);
+      } else if (typeof errorData === 'string') {
+        setError(errorData);
+      } else {
+        setError(err.message || 'Failed to save progress');
+      }
     }
   };
 
@@ -100,28 +122,35 @@ const ProgressPage: React.FC = () => {
       await progressAPI.delete(id);
       fetchProgress();
     } catch (err: any) {
-      setError(err.response?.data || err.message || 'Failed to delete progress');
+      // Handle JSON error response from backend
+      const errorData = err.response?.data;
+      if (errorData?.message) {
+        setError(errorData.message);
+      } else if (typeof errorData === 'string') {
+        setError(errorData);
+      } else {
+        setError(err.message || 'Failed to delete progress');
+      }
     }
   };
 
-  if (loading) {
-    return <div className="text-center py-8">Loading progress...</div>;
-  }
-
   return (
-    <div>
+    <div className="w-full" style={{ position: 'relative', zIndex: 1 }}>
+      {loading && (
+        <div className="text-center py-8 text-gray-600">Loading progress...</div>
+      )}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">My Progress</h1>
         <Button onClick={() => handleOpenModal()}>Add Progress</Button>
       </div>
 
-      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <strong>Error:</strong> {error}
+        </div>
+      )}
 
-      {progressList.length === 0 ? (
-        <Card>
-          <p className="text-center text-gray-500 py-8">No progress entries yet. Add your first entry!</p>
-        </Card>
-      ) : (
+      {!loading && progressList.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {progressList.map((progress) => (
             <Card key={progress.id} title={new Date(progress.progress_date).toLocaleDateString()}>
@@ -142,6 +171,12 @@ const ProgressPage: React.FC = () => {
             </Card>
           ))}
         </div>
+      )}
+
+      {!loading && progressList.length === 0 && !error && (
+        <Card>
+          <p className="text-center text-gray-500 py-8">No progress entries yet. Add your first entry!</p>
+        </Card>
       )}
 
       <Modal

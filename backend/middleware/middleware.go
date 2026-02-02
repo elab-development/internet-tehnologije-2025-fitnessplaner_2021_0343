@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"app/auth"
+	"backend/auth"
 )
 
 type contextKey string

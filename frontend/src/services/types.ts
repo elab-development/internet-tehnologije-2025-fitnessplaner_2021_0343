@@ -5,6 +5,8 @@ export interface User {
   email: string;
   goal: 'lose_weight' | 'hypertrophy';
   role?: 'admin' | 'user' | 'premium';
+  height?: number;
+  weight?: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -14,6 +16,8 @@ export interface RegisterRequest {
   email: string;
   password: string;
   goal: 'lose_weight' | 'hypertrophy';
+  height?: number;
+  weight?: number;
 }
 
 export interface LoginRequest {

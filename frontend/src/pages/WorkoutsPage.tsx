@@ -28,11 +28,25 @@ const WorkoutsPage: React.FC = () => {
   const fetchWorkouts = async () => {
     try {
       setLoading(true);
-      const data = await workoutAPI.getAll();
-      setWorkouts(data);
       setError('');
+      const data = await workoutAPI.getAll();
+      setWorkouts(data || []);
     } catch (err: any) {
-      setError(err.response?.data || err.message || 'Failed to fetch workouts');
+      console.error('Error fetching workouts:', err);
+      // Handle JSON error response from backend
+      const errorData = err.response?.data;
+      let errorMessage = 'Failed to fetch workouts';
+      if (errorData?.message) {
+        errorMessage = errorData.message;
+      } else if (errorData?.error) {
+        errorMessage = errorData.error;
+      } else if (typeof errorData === 'string') {
+        errorMessage = errorData;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
+      setWorkouts([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -89,7 +103,15 @@ const WorkoutsPage: React.FC = () => {
       handleCloseModal();
       fetchWorkouts();
     } catch (err: any) {
-      setError(err.response?.data || err.message || 'Failed to save workout');
+      // Handle JSON error response from backend
+      const errorData = err.response?.data;
+      if (errorData?.message) {
+        setError(errorData.message);
+      } else if (typeof errorData === 'string') {
+        setError(errorData);
+      } else {
+        setError(err.message || 'Failed to save workout');
+      }
     }
   };
 
@@ -100,32 +122,39 @@ const WorkoutsPage: React.FC = () => {
       await workoutAPI.delete(id);
       fetchWorkouts();
     } catch (err: any) {
-      setError(err.response?.data || err.message || 'Failed to delete workout');
+      // Handle JSON error response from backend
+      const errorData = err.response?.data;
+      if (errorData?.message) {
+        setError(errorData.message);
+      } else if (typeof errorData === 'string') {
+        setError(errorData);
+      } else {
+        setError(err.message || 'Failed to delete workout');
+      }
     }
   };
 
-  if (loading) {
-    return <div className="text-center py-8">Loading workouts...</div>;
-  }
-
   return (
-    <div>
+    <div className="w-full" style={{ position: 'relative', zIndex: 1 }}>
+      {loading && (
+        <div className="text-center py-8 text-gray-600">Loading workouts...</div>
+      )}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">My Workouts</h1>
         <Button onClick={() => handleOpenModal()}>Add Workout</Button>
       </div>
 
-      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <strong>Error:</strong> {error}
+        </div>
+      )}
 
-      {workouts.length === 0 ? (
-        <Card>
-          <p className="text-center text-gray-500 py-8">No workouts yet. Add your first workout!</p>
-        </Card>
-      ) : (
+      {!loading && workouts.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {workouts.map((workout) => (
             <Card key={workout.id} title={workout.name}>
-              <p className="text-gray-600 mb-2">{workout.description}</p>
+              <p className="text-gray-600 mb-2">{workout.description || 'No description'}</p>
               <div className="space-y-1 text-sm">
                 <p><strong>Duration:</strong> {workout.duration} minutes</p>
                 <p><strong>Calories:</strong> {workout.calories_burned.toFixed(0)} kcal</p>
@@ -142,6 +171,12 @@ const WorkoutsPage: React.FC = () => {
             </Card>
           ))}
         </div>
+      )}
+
+      {!loading && workouts.length === 0 && !error && (
+        <Card>
+          <p className="text-center text-gray-500 py-8">No workouts yet. Add your first workout!</p>
+        </Card>
       )}
 
       <Modal

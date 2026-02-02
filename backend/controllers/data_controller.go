@@ -3,13 +3,15 @@ package controllers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
 
-	"app/middleware"
-	"app/models"
-	"app/utils"
+	"backend/middleware"
+	"backend/models"
+	"backend/utils"
 )
 
 // ========== WORKOUTS ==========
@@ -31,7 +33,8 @@ func GetWorkouts(w http.ResponseWriter, r *http.Request) {
 		userID,
 	)
 	if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
+		log.Printf("❌ Error querying workouts: %v", err)
+		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
@@ -39,10 +42,21 @@ func GetWorkouts(w http.ResponseWriter, r *http.Request) {
 	var workouts []models.Workout
 	for rows.Next() {
 		var workout models.Workout
-		if err := rows.Scan(&workout.ID, &workout.UserID, &workout.Name, &workout.Description, &workout.Duration, &workout.CaloriesBurned, &workout.WorkoutDate, &workout.CreatedAt, &workout.UpdatedAt); err != nil {
+		var description sql.NullString
+		if err := rows.Scan(&workout.ID, &workout.UserID, &workout.Name, &description, &workout.Duration, &workout.CaloriesBurned, &workout.WorkoutDate, &workout.CreatedAt, &workout.UpdatedAt); err != nil {
+			log.Printf("❌ Error scanning workout row: %v", err)
 			continue
 		}
+		if description.Valid {
+			workout.Description = description.String
+		}
 		workouts = append(workouts, workout)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("❌ Error iterating workout rows: %v", err)
+		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -78,15 +92,25 @@ func CreateWorkout(w http.ResponseWriter, r *http.Request) {
 		userID, req.Name, req.Description, req.Duration, req.CaloriesBurned, workoutDate,
 	)
 	if err != nil {
-		http.Error(w, "Failed to create workout", http.StatusInternalServerError)
+		log.Printf("❌ Error creating workout: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to create workout: %v", err), http.StatusInternalServerError)
 		return
 	}
 
 	workoutID, _ := result.LastInsertId()
 	var workout models.Workout
-	utils.DB.QueryRow("SELECT id, user_id, name, description, duration, calories_burned, workout_date, created_at, updated_at FROM workouts WHERE id = ?", workoutID).Scan(
-		&workout.ID, &workout.UserID, &workout.Name, &workout.Description, &workout.Duration, &workout.CaloriesBurned, &workout.WorkoutDate, &workout.CreatedAt, &workout.UpdatedAt,
+	var description sql.NullString
+	err = utils.DB.QueryRow("SELECT id, user_id, name, description, duration, calories_burned, workout_date, created_at, updated_at FROM workouts WHERE id = ?", workoutID).Scan(
+		&workout.ID, &workout.UserID, &workout.Name, &description, &workout.Duration, &workout.CaloriesBurned, &workout.WorkoutDate, &workout.CreatedAt, &workout.UpdatedAt,
 	)
+	if err != nil {
+		log.Printf("❌ Error fetching created workout: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to fetch created workout: %v", err), http.StatusInternalServerError)
+		return
+	}
+	if description.Valid {
+		workout.Description = description.String
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -106,22 +130,47 @@ func UpdateWorkout(w http.ResponseWriter, r *http.Request) {
 	if err := utils.DB.QueryRow("SELECT user_id FROM workouts WHERE id = ?", workoutID).Scan(&ownerID); err == sql.ErrNoRows {
 		http.Error(w, "Workout not found", http.StatusNotFound)
 		return
+	} else if err != nil {
+		log.Printf("❌ Error checking workout ownership: %v", err)
+		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
+		return
 	} else if ownerID != userID {
 		http.Error(w, "Unauthorized", http.StatusForbidden)
 		return
 	}
 
 	var req models.WorkoutRequest
-	json.NewDecoder(r.Body).Decode(&req)
-	workoutDate, _ := time.Parse("2006-01-02", req.WorkoutDate)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	workoutDate, err := time.Parse("2006-01-02", req.WorkoutDate)
+	if err != nil {
+		http.Error(w, "Invalid date format. Use YYYY-MM-DD", http.StatusBadRequest)
+		return
+	}
 
-	utils.DB.Exec("UPDATE workouts SET name = ?, description = ?, duration = ?, calories_burned = ?, workout_date = ? WHERE id = ?",
+	_, err = utils.DB.Exec("UPDATE workouts SET name = ?, description = ?, duration = ?, calories_burned = ?, workout_date = ? WHERE id = ?",
 		req.Name, req.Description, req.Duration, req.CaloriesBurned, workoutDate, workoutID)
+	if err != nil {
+		log.Printf("❌ Error updating workout: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to update workout: %v", err), http.StatusInternalServerError)
+		return
+	}
 
 	var workout models.Workout
-	utils.DB.QueryRow("SELECT id, user_id, name, description, duration, calories_burned, workout_date, created_at, updated_at FROM workouts WHERE id = ?", workoutID).Scan(
-		&workout.ID, &workout.UserID, &workout.Name, &workout.Description, &workout.Duration, &workout.CaloriesBurned, &workout.WorkoutDate, &workout.CreatedAt, &workout.UpdatedAt,
+	var description sql.NullString
+	err = utils.DB.QueryRow("SELECT id, user_id, name, description, duration, calories_burned, workout_date, created_at, updated_at FROM workouts WHERE id = ?", workoutID).Scan(
+		&workout.ID, &workout.UserID, &workout.Name, &description, &workout.Duration, &workout.CaloriesBurned, &workout.WorkoutDate, &workout.CreatedAt, &workout.UpdatedAt,
 	)
+	if err != nil {
+		log.Printf("❌ Error fetching updated workout: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to fetch updated workout: %v", err), http.StatusInternalServerError)
+		return
+	}
+	if description.Valid {
+		workout.Description = description.String
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(workout)
@@ -140,12 +189,22 @@ func DeleteWorkout(w http.ResponseWriter, r *http.Request) {
 	if err := utils.DB.QueryRow("SELECT user_id FROM workouts WHERE id = ?", workoutID).Scan(&ownerID); err == sql.ErrNoRows {
 		http.Error(w, "Workout not found", http.StatusNotFound)
 		return
+	} else if err != nil {
+		log.Printf("❌ Error checking workout ownership: %v", err)
+		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
+		return
 	} else if ownerID != userID {
 		http.Error(w, "Unauthorized", http.StatusForbidden)
 		return
 	}
 
-	utils.DB.Exec("DELETE FROM workouts WHERE id = ?", workoutID)
+	_, err := utils.DB.Exec("DELETE FROM workouts WHERE id = ?", workoutID)
+	if err != nil {
+		log.Printf("❌ Error deleting workout: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to delete workout: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "Workout deleted successfully"})
 }
@@ -169,7 +228,8 @@ func GetProgress(w http.ResponseWriter, r *http.Request) {
 		userID,
 	)
 	if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
+		log.Printf("❌ Error querying progress: %v", err)
+		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
@@ -177,10 +237,28 @@ func GetProgress(w http.ResponseWriter, r *http.Request) {
 	var progressList []models.Progress
 	for rows.Next() {
 		var progress models.Progress
-		if err := rows.Scan(&progress.ID, &progress.UserID, &progress.Weight, &progress.BodyFat, &progress.MuscleMass, &progress.Notes, &progress.ProgressDate, &progress.CreatedAt, &progress.UpdatedAt); err != nil {
+		var bodyFat, muscleMass sql.NullFloat64
+		var notes sql.NullString
+		if err := rows.Scan(&progress.ID, &progress.UserID, &progress.Weight, &bodyFat, &muscleMass, &notes, &progress.ProgressDate, &progress.CreatedAt, &progress.UpdatedAt); err != nil {
+			log.Printf("❌ Error scanning progress row: %v", err)
 			continue
 		}
+		if bodyFat.Valid {
+			progress.BodyFat = bodyFat.Float64
+		}
+		if muscleMass.Valid {
+			progress.MuscleMass = muscleMass.Float64
+		}
+		if notes.Valid {
+			progress.Notes = notes.String
+		}
 		progressList = append(progressList, progress)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("❌ Error iterating progress rows: %v", err)
+		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -216,15 +294,32 @@ func CreateProgress(w http.ResponseWriter, r *http.Request) {
 		userID, req.Weight, req.BodyFat, req.MuscleMass, req.Notes, progressDate,
 	)
 	if err != nil {
-		http.Error(w, "Failed to create progress entry", http.StatusInternalServerError)
+		log.Printf("❌ Error creating progress: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to create progress entry: %v", err), http.StatusInternalServerError)
 		return
 	}
 
 	progressID, _ := result.LastInsertId()
 	var progress models.Progress
-	utils.DB.QueryRow("SELECT id, user_id, weight, body_fat, muscle_mass, notes, progress_date, created_at, updated_at FROM progress WHERE id = ?", progressID).Scan(
-		&progress.ID, &progress.UserID, &progress.Weight, &progress.BodyFat, &progress.MuscleMass, &progress.Notes, &progress.ProgressDate, &progress.CreatedAt, &progress.UpdatedAt,
+	var bodyFat, muscleMass sql.NullFloat64
+	var notes sql.NullString
+	err = utils.DB.QueryRow("SELECT id, user_id, weight, body_fat, muscle_mass, notes, progress_date, created_at, updated_at FROM progress WHERE id = ?", progressID).Scan(
+		&progress.ID, &progress.UserID, &progress.Weight, &bodyFat, &muscleMass, &notes, &progress.ProgressDate, &progress.CreatedAt, &progress.UpdatedAt,
 	)
+	if err != nil {
+		log.Printf("❌ Error fetching created progress: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to fetch created progress: %v", err), http.StatusInternalServerError)
+		return
+	}
+	if bodyFat.Valid {
+		progress.BodyFat = bodyFat.Float64
+	}
+	if muscleMass.Valid {
+		progress.MuscleMass = muscleMass.Float64
+	}
+	if notes.Valid {
+		progress.Notes = notes.String
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -244,22 +339,54 @@ func UpdateProgress(w http.ResponseWriter, r *http.Request) {
 	if err := utils.DB.QueryRow("SELECT user_id FROM progress WHERE id = ?", progressID).Scan(&ownerID); err == sql.ErrNoRows {
 		http.Error(w, "Progress entry not found", http.StatusNotFound)
 		return
+	} else if err != nil {
+		log.Printf("❌ Error checking progress ownership: %v", err)
+		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
+		return
 	} else if ownerID != userID {
 		http.Error(w, "Unauthorized", http.StatusForbidden)
 		return
 	}
 
 	var req models.ProgressRequest
-	json.NewDecoder(r.Body).Decode(&req)
-	progressDate, _ := time.Parse("2006-01-02", req.ProgressDate)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	progressDate, err := time.Parse("2006-01-02", req.ProgressDate)
+	if err != nil {
+		http.Error(w, "Invalid date format. Use YYYY-MM-DD", http.StatusBadRequest)
+		return
+	}
 
-	utils.DB.Exec("UPDATE progress SET weight = ?, body_fat = ?, muscle_mass = ?, notes = ?, progress_date = ? WHERE id = ?",
+	_, err = utils.DB.Exec("UPDATE progress SET weight = ?, body_fat = ?, muscle_mass = ?, notes = ?, progress_date = ? WHERE id = ?",
 		req.Weight, req.BodyFat, req.MuscleMass, req.Notes, progressDate, progressID)
+	if err != nil {
+		log.Printf("❌ Error updating progress: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to update progress: %v", err), http.StatusInternalServerError)
+		return
+	}
 
 	var progress models.Progress
-	utils.DB.QueryRow("SELECT id, user_id, weight, body_fat, muscle_mass, notes, progress_date, created_at, updated_at FROM progress WHERE id = ?", progressID).Scan(
-		&progress.ID, &progress.UserID, &progress.Weight, &progress.BodyFat, &progress.MuscleMass, &progress.Notes, &progress.ProgressDate, &progress.CreatedAt, &progress.UpdatedAt,
+	var bodyFat, muscleMass sql.NullFloat64
+	var notes sql.NullString
+	err = utils.DB.QueryRow("SELECT id, user_id, weight, body_fat, muscle_mass, notes, progress_date, created_at, updated_at FROM progress WHERE id = ?", progressID).Scan(
+		&progress.ID, &progress.UserID, &progress.Weight, &bodyFat, &muscleMass, &notes, &progress.ProgressDate, &progress.CreatedAt, &progress.UpdatedAt,
 	)
+	if err != nil {
+		log.Printf("❌ Error fetching updated progress: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to fetch updated progress: %v", err), http.StatusInternalServerError)
+		return
+	}
+	if bodyFat.Valid {
+		progress.BodyFat = bodyFat.Float64
+	}
+	if muscleMass.Valid {
+		progress.MuscleMass = muscleMass.Float64
+	}
+	if notes.Valid {
+		progress.Notes = notes.String
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(progress)
@@ -278,13 +405,22 @@ func DeleteProgress(w http.ResponseWriter, r *http.Request) {
 	if err := utils.DB.QueryRow("SELECT user_id FROM progress WHERE id = ?", progressID).Scan(&ownerID); err == sql.ErrNoRows {
 		http.Error(w, "Progress entry not found", http.StatusNotFound)
 		return
+	} else if err != nil {
+		log.Printf("❌ Error checking progress ownership: %v", err)
+		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
+		return
 	} else if ownerID != userID {
 		http.Error(w, "Unauthorized", http.StatusForbidden)
 		return
 	}
 
-	utils.DB.Exec("DELETE FROM progress WHERE id = ?", progressID)
+	_, err := utils.DB.Exec("DELETE FROM progress WHERE id = ?", progressID)
+	if err != nil {
+		log.Printf("❌ Error deleting progress: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to delete progress: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "Progress entry deleted successfully"})
 }
-

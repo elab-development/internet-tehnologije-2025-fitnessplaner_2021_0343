@@ -22,7 +22,15 @@ const LoginPage: React.FC = () => {
       await login({ email, password });
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data || err.message || 'Login failed');
+      // Handle JSON error response from backend
+      const errorData = err.response?.data;
+      if (errorData?.message) {
+        setError(errorData.message);
+      } else if (typeof errorData === 'string') {
+        setError(errorData);
+      } else {
+        setError(err.message || 'Login failed');
+      }
     } finally {
       setLoading(false);
     }

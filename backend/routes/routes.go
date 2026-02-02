@@ -3,8 +3,8 @@ package routes
 import (
 	"net/http"
 
-	"app/controllers"
-	"app/middleware"
+	"backend/controllers"
+	"backend/middleware"
 )
 
 // SetupRoutes configures all routes

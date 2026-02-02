@@ -10,6 +10,8 @@ const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [goal, setGoal] = useState<'lose_weight' | 'hypertrophy'>('lose_weight');
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -21,10 +23,25 @@ const RegisterPage: React.FC = () => {
     setLoading(true);
 
     try {
-      await register({ name, email, password, goal });
+      await register({ 
+        name, 
+        email, 
+        password, 
+        goal,
+        height: height ? parseFloat(height) : undefined,
+        weight: weight ? parseFloat(weight) : undefined,
+      });
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data || err.message || 'Registration failed');
+      // Handle JSON error response from backend
+      const errorData = err.response?.data;
+      if (errorData?.message) {
+        setError(errorData.message);
+      } else if (typeof errorData === 'string') {
+        setError(errorData);
+      } else {
+        setError(err.message || 'Registration failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -73,6 +90,28 @@ const RegisterPage: React.FC = () => {
               <option value="lose_weight">Lose Weight</option>
               <option value="hypertrophy">Hypertrophy</option>
             </select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Height (cm)"
+              type="number"
+              value={height}
+              onChange={(e) => setHeight(e.target.value)}
+              min={50}
+              max={250}
+              step="0.1"
+              placeholder="170"
+            />
+            <Input
+              label="Weight (kg)"
+              type="number"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+              min={30}
+              max={300}
+              step="0.1"
+              placeholder="70"
+            />
           </div>
           <Button type="submit" disabled={loading} className="w-full">
             {loading ? 'Registering...' : 'Register'}

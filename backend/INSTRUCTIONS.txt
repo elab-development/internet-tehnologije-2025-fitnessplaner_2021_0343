@@ -1,0 +1,46 @@
+========================================
+KAKO DA ISPRAVITE BAZU PODATAKA
+========================================
+
+Problem: MySQL komanda nije u PATH-u, pa batch fajlovi ne rade.
+
+REŠENJE - Opcija 1: MySQL Workbench (NAJLAKŠE)
+===============================================
+
+1. Otvorite MySQL Workbench
+2. Povežite se na bazu (root / Vojislav123!)
+3. Kliknite na "File" -> "Open SQL Script"
+4. Otvorite fajl: FIX_DATABASE.sql
+5. Kliknite na zeleni "Execute" dugme (⚡)
+6. Proverite da li su tabele kreirane
+
+REŠENJE - Opcija 2: Pronađite MySQL i dodajte u PATH
+====================================================
+
+MySQL je obično instaliran u:
+- C:\Program Files\MySQL\MySQL Server 8.0\bin\
+- C:\xampp\mysql\bin\
+- C:\wamp64\bin\mysql\mysql8.0.xx\bin\
+
+Pronađite gde je MySQL instaliran, pa pokrenite:
+
+cd C:\Users\User\Desktop\proba123\backend
+"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -pVojislav123! app_db < FIX_DATABASE.sql
+
+REŠENJE - Opcija 3: XAMPP Control Panel
+========================================
+
+Ako koristite XAMPP:
+1. Otvorite XAMPP Control Panel
+2. Pokrenite MySQL
+3. Otvorite phpMyAdmin (http://localhost/phpmyadmin)
+4. Izaberite bazu "app_db"
+5. Kliknite na "SQL" tab
+6. Kopirajte i nalepite SQL iz FIX_DATABASE.sql
+7. Kliknite "Go"
+
+NAKON IZVRŠAVANJA:
+==================
+1. Restartujte backend: go run main.go
+2. Testirajte Workouts i Progress stranice
+

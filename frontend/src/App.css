@@ -10,12 +10,21 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: transparent;
   min-height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
 .App {
   min-height: 100vh;
+  position: relative;
+  background: transparent;
+}
+
+.App > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Auth Pages */

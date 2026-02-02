@@ -8,6 +8,7 @@ import DashboardPage from './pages/DashboardPage';
 import WorkoutsPage from './pages/WorkoutsPage';
 import ProgressPage from './pages/ProgressPage';
 import ProfilePage from './pages/ProfilePage';
+import VideosPage from './pages/VideosPage';
 import './App.css';
 
 // Protected Route Component
@@ -60,6 +61,14 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/videos"
+        element={
+          <ProtectedRoute>
+            <VideosPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
     </Routes>
   );
@@ -69,9 +78,9 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="App min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100">
+        <div className="App min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100" style={{ minHeight: '100vh', position: 'relative' }}>
           <Navigation />
-          <div className="container mx-auto px-4 py-8">
+          <div className="container mx-auto px-4 py-8" style={{ minHeight: 'calc(100vh - 200px)', position: 'relative', zIndex: 1 }}>
             <AppRoutes />
           </div>
         </div>

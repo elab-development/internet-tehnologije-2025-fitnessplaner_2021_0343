@@ -7,7 +7,7 @@ type User struct {
 	ID        int       `json:"id" db:"id"`
 	Name      string    `json:"name" db:"name"`
 	Email     string    `json:"email" db:"email"`
-	Password  string    `json:"-" db:"password"` // Hidden from JSON
+	Password  string    `json:"-" db:"password"` // Sakriveno od JSONa
 	Goal      string    `json:"goal" db:"goal"`  // lose_weight ili hypertrophy
 	Role      string    `json:"role" db:"role"`  // admin, user, premium
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
@@ -20,7 +20,7 @@ type RegisterRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`
 	Goal     string `json:"goal" binding:"required,oneof=lose_weight hypertrophy"`
-	Role     string `json:"role"` // Optional, defaults to "user"
+	Role     string `json:"role"` // Opciono, default "user"
 }
 
 // LoginRequest predstavlja podatke za login

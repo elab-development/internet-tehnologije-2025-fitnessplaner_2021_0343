@@ -8,7 +8,7 @@ type Workout struct {
 	UserID      int       `json:"user_id" db:"user_id"`
 	Name        string    `json:"name" db:"name"`
 	Description string    `json:"description" db:"description"`
-	Duration    int       `json:"duration" db:"duration"` // in minutes
+	Duration    int       `json:"duration" db:"duration"` // u minutima
 	CaloriesBurned float64 `json:"calories_burned" db:"calories_burned"`
 	WorkoutDate time.Time `json:"workout_date" db:"workout_date"`
 	CreatedAt   time.Time `json:"created_at" db:"created_at"`

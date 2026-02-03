@@ -13,7 +13,7 @@ import (
 	"backend/utils"
 )
 
-// Register handles user registration
+// Register hendluje registraciju korisnika
 func Register(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.JSONError(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -26,13 +26,13 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate goal
+	// Validacija cilja
 	if req.Goal != "lose_weight" && req.Goal != "hypertrophy" {
 		utils.JSONError(w, "Goal must be 'lose_weight' or 'hypertrophy'", http.StatusBadRequest)
 		return
 	}
 
-	// Check if user exists
+	// Provera da li email vec postoji
 	var existingID int
 	err := utils.DB.QueryRow("SELECT id FROM users WHERE email = ?", req.Email).Scan(&existingID)
 	if err != sql.ErrNoRows {
@@ -45,7 +45,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Hash password
+	// hesiranje lozinke/sifre
 	hashedPassword, err := auth.HashPassword(req.Password)
 	if err != nil {
 		utils.JSONError(w, "Failed to hash password", http.StatusInternalServerError)
@@ -55,13 +55,13 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	// Set default role - ALWAYS use "user" for new registrations
 	// Don't trust frontend to send correct role value - force it to be "user"
 	role := "user"
-	
-	// Log what was received (for debugging)
+
+	// Log ako je pokusaj da se setuje druga uloga
 	if req.Role != "" {
 		log.Printf("📝 Received role from request: '%s' (will use 'user' instead)", req.Role)
 	}
 
-	// Verify role column structure before insert
+	// Verifikacija tipa kolone i default vrednositi u bazi za kolonu role/uloga
 	var roleType, roleDefault string
 	err = utils.DB.QueryRow(
 		"SELECT DATA_TYPE, COLUMN_DEFAULT FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'users' AND column_name = 'role'",
@@ -70,34 +70,34 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		log.Printf("🔍 Role column type: %s, default: %s", roleType, roleDefault)
 	}
 
-	// Log exact values being inserted
-	log.Printf("📝 Inserting user: name='%s', email='%s', goal='%s', role='%s', height=%v, weight=%v", 
+	// Log informacija o korsniku koji se registruje
+	log.Printf("📝 Inserting user: name='%s', email='%s', goal='%s', role='%s', height=%v, weight=%v",
 		req.Name, req.Email, req.Goal, role, req.Height, req.Weight)
 
-	// Insert user with height and weight if provided
+	// Insertovanje korisnika u bazu
 	var result sql.Result
 	if req.Height != nil && req.Weight != nil {
-		// Try with height and weight
+		// Pokusaj insertovanje sa visinom i tezinom
 		result, err = utils.DB.Exec(
 			"INSERT INTO users (name, email, password, goal, role, height, weight) VALUES (?, ?, ?, ?, ?, ?, ?)",
 			req.Name, req.Email, hashedPassword, req.Goal, role, req.Height, req.Weight,
 		)
 		if err != nil {
 			log.Printf("⚠️  Insert with height/weight failed: %v, trying without...", err)
-			// Fallback to without height/weight
+			// Fallnack na insertovanje bez visine i tezine
 			result, err = utils.DB.Exec(
 				"INSERT INTO users (name, email, password, goal, role) VALUES (?, ?, ?, ?, ?)",
 				req.Name, req.Email, hashedPassword, req.Goal, role,
 			)
 		}
 	} else {
-		// Insert without height and weight
+		// Insertovanje bez visine i tezine
 		result, err = utils.DB.Exec(
 			"INSERT INTO users (name, email, password, goal, role) VALUES (?, ?, ?, ?, ?)",
 			req.Name, req.Email, hashedPassword, req.Goal, role,
 		)
 		if err != nil {
-			// If that fails, try without role
+			// Ako insert sa ulogom ne uspe pokusaj bez uloge
 			log.Printf("⚠️  Insert with role failed: %v, trying without role...", err)
 			result, err = utils.DB.Exec(
 				"INSERT INTO users (name, email, password, goal) VALUES (?, ?, ?, ?)",
@@ -105,7 +105,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			)
 		}
 	}
-	
+
 	if err != nil {
 		log.Printf("❌ Error creating user: %v", err)
 		utils.JSONError(w, fmt.Sprintf("Failed to create user: %v", err), http.StatusInternalServerError)
@@ -114,7 +114,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	userID, _ := result.LastInsertId()
 
-	// Generate token
+	// Generisi token
 	token, err := auth.GenerateToken(int(userID), req.Email)
 	if err != nil {
 		utils.JSONError(w, "Failed to generate token", http.StatusInternalServerError)
@@ -140,7 +140,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// Login handles user login
+// Login handluje prijavu korisnika
 func Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.JSONError(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -153,7 +153,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user from database
+	// Fetchovanje korisnika iz baze
 	var user models.User
 	var password sql.NullString
 	var height, weight sql.NullFloat64
@@ -161,15 +161,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		"SELECT id, name, email, password, goal, role, height, weight FROM users WHERE email = ?",
 		req.Email,
 	).Scan(&user.ID, &user.Name, &user.Email, &password, &user.Goal, &user.Role, &height, &weight)
-	
-	// Convert sql.NullFloat64 to *float64
+
+	// Convertovanjee sql.NullFloat64 u *float64
 	if height.Valid {
 		user.Height = &height.Float64
 	}
 	if weight.Valid {
 		user.Weight = &weight.Float64
 	}
-	
+
 	if password.Valid && password.String != "" {
 		user.Password = password.String
 	} else {
@@ -188,20 +188,20 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check password
+	// Proveri lozinku/sifru
 	if !auth.CheckPassword(req.Password, user.Password) {
 		utils.JSONError(w, "Invalid email or password", http.StatusUnauthorized)
 		return
 	}
 
-	// Generate token
+	// Generisi token
 	token, err := auth.GenerateToken(user.ID, user.Email)
 	if err != nil {
 		utils.JSONError(w, "Failed to generate token", http.StatusInternalServerError)
 		return
 	}
 
-	// Don't send password
+	// ne salji sifru u response
 	user.Password = ""
 
 	response := models.LoginResponse{
@@ -213,7 +213,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// GetProfile returns the current user's profile
+// GetProfile vraca profil autentifikovanog korisnika
 func GetProfile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		utils.JSONError(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -232,8 +232,8 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 		"SELECT id, name, email, goal, role, height, weight FROM users WHERE id = ?",
 		userID,
 	).Scan(&user.ID, &user.Name, &user.Email, &user.Goal, &user.Role, &height, &weight)
-	
-	// Convert sql.NullFloat64 to *float64
+
+	// pretvara sql.NullFloat64 u *float64
 	if height.Valid {
 		user.Height = &height.Float64
 	}
@@ -254,7 +254,7 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
-// Logout handles user logout (client-side token removal, but we can log it)
+// Logout hendluje odjavu korisnika
 func Logout(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.JSONError(w, "Method not allowed", http.StatusMethodNotAllowed)

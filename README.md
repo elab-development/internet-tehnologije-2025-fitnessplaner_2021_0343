@@ -166,7 +166,7 @@ Services:
 
 - **Backend**: `http://localhost:8080`
 - **Frontend**: `http://localhost:5173`
-- **MySQL**: `localhost:3306` (user: `root`, password: `Vojislav123!`, db: `app_db`)
+- **MySQL**: `localhost:3307` (container port 3306) (user: `root`, password: `Vojislav123!`, db: `app_db`)
 - **Swagger UI**: `http://localhost:8081`
 
 To stop:
@@ -191,7 +191,7 @@ API specifikacija je definisana u OpenAPI formatu u fajlu `backend/docs/openapi.
 Ukoliko želiš ručno da ažuriraš specifikaciju kada menjaš API:
 
 - izmeni `backend/docs/openapi.yaml` (dodaj/izmeni rute, modele, opise)
-- ponovo pokreni Swagger UI kontejner:
+- ponovo pokreni Swagger UI kontejner (učitaće novi YAML fajl):
 
 ```bash
 docker-compose up -d swagger-ui

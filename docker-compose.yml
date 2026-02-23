@@ -16,7 +16,8 @@ services:
       "--collation-server=utf8mb4_unicode_ci"
     ]
     ports:
-      - "3306:3306"
+      # Use 3307 on host to avoid conflicts with locally installed MySQL
+      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -61,14 +62,13 @@ services:
     container_name: fitness-swagger
     restart: unless-stopped
     environment:
-      SWAGGER_JSON_URL: /openapi.yaml
-      BASE_URL: /
+      # Swagger UI will load the OpenAPI file from nginx static files
+      SWAGGER_JSON: /openapi.yaml
     volumes:
       - ./backend/docs/openapi.yaml:/usr/share/nginx/html/openapi.yaml:ro
     ports:
       - "8081:8080"
-    depends_on:
-      - backend
+    # Swagger UI doesn't need backend/db - it only displays documentation
 
 volumes:
   db_data:

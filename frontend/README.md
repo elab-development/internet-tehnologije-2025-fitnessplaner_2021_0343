@@ -78,4 +78,7 @@ Frontend koristi sledeće backend endpoint-e:
 - `GET /api/meal-plan` - Plan ishrane (zaštićeno)
 
 Svi zaštićeni endpoint-i zahtevaju JWT token u `Authorization` header-u.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

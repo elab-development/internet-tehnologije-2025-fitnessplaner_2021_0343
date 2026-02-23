@@ -1,26 +1,38 @@
+<<<<<<< HEAD
 -- ============================================
 -- COMPLETE DATABASE SETUP FOR FITNESS APP
 -- ============================================
 -- Kopirajte i nalepite ceo ovaj kod u MySQL Workbench
 -- i pokrenite ga (Execute button)
 -- ============================================
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 
 -- Kreiraj bazu ako ne postoji
 CREATE DATABASE IF NOT EXISTS app_db;
 USE app_db;
 
+<<<<<<< HEAD
 -- ============================================
 -- 1. BRISANJE POSTOJEĆIH TABELA (sa svim zavisnostima)
 -- ============================================
+=======
+-- 1. BRISANJE POSTOJEĆIH TABELA (sa svim zavisnostima)
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 -- Prvo obriši sve tabele koje imaju foreign key-ove
 DROP TABLE IF EXISTS workout_exercises;
 DROP TABLE IF EXISTS progress;
 DROP TABLE IF EXISTS workouts;
 DROP TABLE IF EXISTS users;
 
+<<<<<<< HEAD
 -- ============================================
 -- 2. KREIRANJE USERS TABELE
 -- ============================================
+=======
+
+-- 2. KREIRANJE USERS TABELE
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -34,9 +46,14 @@ CREATE TABLE users (
     INDEX idx_role (role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+<<<<<<< HEAD
 -- ============================================
 -- 3. KREIRANJE WORKOUTS TABELE
 -- ============================================
+=======
+
+-- 3. KREIRANJE WORKOUTS TABELE
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 CREATE TABLE workouts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -52,9 +69,13 @@ CREATE TABLE workouts (
     INDEX idx_workout_date (workout_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+<<<<<<< HEAD
 -- ============================================
 -- 4. KREIRANJE PROGRESS TABELE
 -- ============================================
+=======
+-- 4. KREIRANJE PROGRESS TABELE
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 CREATE TABLE progress (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -70,9 +91,14 @@ CREATE TABLE progress (
     INDEX idx_progress_date (progress_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+<<<<<<< HEAD
 -- ============================================
 -- 5. PROVERA - PRIKAZ KREIRANIH TABELA
 -- ============================================
+=======
+
+-- 5. PROVERA - PRIKAZ KREIRANIH TABELA
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 SELECT '✅ Database setup completed successfully!' AS Status;
 
 -- Prikaži sve tabele
@@ -90,9 +116,13 @@ DESCRIBE workouts;
 SELECT '=== PROGRESS TABLE STRUCTURE ===' AS Info;
 DESCRIBE progress;
 
+<<<<<<< HEAD
 -- ============================================
 -- 6. FINALNA PROVERA - BROJ TABELA
 -- ============================================
+=======
+-- 6. FINALNA PROVERA - BROJ TABELA
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 SELECT COUNT(*) AS 'Ukupno tabela' FROM information_schema.tables 
 WHERE table_schema = 'app_db';
 

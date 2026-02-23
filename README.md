@@ -145,6 +145,7 @@ The app automatically creates tables on startup. If you see table errors:
 2. Ensure user has CREATE TABLE permissions
 3. Check database connection in logs
 
+<<<<<<< HEAD
 ## Docker Setup
 
 You can run the entire stack (backend, frontend, MySQL and Swagger UI) using Docker and Docker Compose.
@@ -197,6 +198,8 @@ Ukoliko želiš ručno da ažuriraš specifikaciju kada menjaš API:
 docker-compose up -d swagger-ui
 ```
 
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 ## Project Structure
 
 ```
@@ -221,5 +224,8 @@ proba123/
 ## License
 
 [Your License Here]
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

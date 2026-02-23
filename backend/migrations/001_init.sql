@@ -1,10 +1,17 @@
+<<<<<<< HEAD
 -- Complete database initialization
 -- Run this file to set up the entire database
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 
 CREATE DATABASE IF NOT EXISTS app_db;
 USE app_db;
 
+<<<<<<< HEAD
 -- Create users table with role column
+=======
+-- Kreiranje tabele usera sa kolonom role
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -18,7 +25,11 @@ CREATE TABLE IF NOT EXISTS users (
     INDEX idx_role (role)
 );
 
+<<<<<<< HEAD
 -- Create workouts table
+=======
+-- Kreiranje tabele za vezbe
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 CREATE TABLE IF NOT EXISTS workouts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -34,7 +45,11 @@ CREATE TABLE IF NOT EXISTS workouts (
     INDEX idx_workout_date (workout_date)
 );
 
+<<<<<<< HEAD
 -- Create progress table
+=======
+-- Kreiranje tabele za progres
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 CREATE TABLE IF NOT EXISTS progress (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -49,4 +64,7 @@ CREATE TABLE IF NOT EXISTS progress (
     INDEX idx_user_id (user_id),
     INDEX idx_progress_date (progress_date)
 );
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

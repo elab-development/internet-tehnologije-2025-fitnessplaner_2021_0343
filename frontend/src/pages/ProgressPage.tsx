@@ -20,7 +20,11 @@ const ProgressPage: React.FC = () => {
     progress_date: new Date().toISOString().split('T')[0],
   });
 
+<<<<<<< HEAD
   // Fetch progress on component mount
+=======
+ 
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
   useEffect(() => {
     fetchProgress();
   }, []);
@@ -33,7 +37,10 @@ const ProgressPage: React.FC = () => {
       setProgressList(data || []);
     } catch (err: any) {
       console.error('Error fetching progress:', err);
+<<<<<<< HEAD
       // Handle JSON error response from backend
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
       const errorData = err.response?.data;
       let errorMessage = 'Failed to fetch progress';
       if (errorData?.message) {
@@ -46,7 +53,11 @@ const ProgressPage: React.FC = () => {
         errorMessage = err.message;
       }
       setError(errorMessage);
+<<<<<<< HEAD
       setProgressList([]); // Set empty array on error
+=======
+      setProgressList([]); 
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
     } finally {
       setLoading(false);
     }
@@ -103,7 +114,10 @@ const ProgressPage: React.FC = () => {
       handleCloseModal();
       fetchProgress();
     } catch (err: any) {
+<<<<<<< HEAD
       // Handle JSON error response from backend
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
       const errorData = err.response?.data;
       if (errorData?.message) {
         setError(errorData.message);
@@ -122,7 +136,10 @@ const ProgressPage: React.FC = () => {
       await progressAPI.delete(id);
       fetchProgress();
     } catch (err: any) {
+<<<<<<< HEAD
       // Handle JSON error response from backend
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
       const errorData = err.response?.data;
       if (errorData?.message) {
         setError(errorData.message);
@@ -240,4 +257,7 @@ const ProgressPage: React.FC = () => {
 };
 
 export default ProgressPage;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

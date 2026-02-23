@@ -9,7 +9,11 @@ import (
 )
 
 func main() {
+<<<<<<< HEAD
 	// Initialize database
+=======
+	// Inicijalizacija baze podataka
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 	if err := utils.InitDB(); err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}

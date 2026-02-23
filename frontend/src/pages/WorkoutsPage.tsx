@@ -20,7 +20,10 @@ const WorkoutsPage: React.FC = () => {
     workout_date: new Date().toISOString().split('T')[0],
   });
 
+<<<<<<< HEAD
   // Fetch workouts on component mount
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
   useEffect(() => {
     fetchWorkouts();
   }, []);
@@ -33,7 +36,10 @@ const WorkoutsPage: React.FC = () => {
       setWorkouts(data || []);
     } catch (err: any) {
       console.error('Error fetching workouts:', err);
+<<<<<<< HEAD
       // Handle JSON error response from backend
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
       const errorData = err.response?.data;
       let errorMessage = 'Failed to fetch workouts';
       if (errorData?.message) {
@@ -46,7 +52,11 @@ const WorkoutsPage: React.FC = () => {
         errorMessage = err.message;
       }
       setError(errorMessage);
+<<<<<<< HEAD
       setWorkouts([]); // Set empty array on error
+=======
+      setWorkouts([]);
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
     } finally {
       setLoading(false);
     }
@@ -103,7 +113,10 @@ const WorkoutsPage: React.FC = () => {
       handleCloseModal();
       fetchWorkouts();
     } catch (err: any) {
+<<<<<<< HEAD
       // Handle JSON error response from backend
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
       const errorData = err.response?.data;
       if (errorData?.message) {
         setError(errorData.message);
@@ -238,4 +251,7 @@ const WorkoutsPage: React.FC = () => {
 };
 
 export default WorkoutsPage;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

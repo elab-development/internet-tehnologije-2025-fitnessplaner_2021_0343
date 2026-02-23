@@ -18,4 +18,7 @@ mysql -u %DB_USER% -p%DB_PASS% < backend\migrations\001_init.sql
 echo.
 echo Migration completed!
 pause
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

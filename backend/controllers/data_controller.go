@@ -424,3 +424,7 @@ func DeleteProgress(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "Progress entry deleted successfully"})
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

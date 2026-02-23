@@ -33,7 +33,10 @@ const RegisterPage: React.FC = () => {
       });
       navigate('/dashboard');
     } catch (err: any) {
+<<<<<<< HEAD
       // Handle JSON error response from backend
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
       const errorData = err.response?.data;
       if (errorData?.message) {
         setError(errorData.message);
@@ -126,4 +129,7 @@ const RegisterPage: React.FC = () => {
 };
 
 export default RegisterPage;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

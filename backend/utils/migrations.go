@@ -7,40 +7,40 @@ import (
 	"strings"
 )
 
-// RunMigrations executes database migrations
+// RunMigrations izvršava migracije baze podataka
 func RunMigrations() error {
-	log.Println("🔄 Running database migrations...")
+	log.Println("🔄 Pokretanje migracija baze podataka...")
 
-	// Read migration file
+	// Čitanje migration fajla
 	migrationSQL, err := os.ReadFile("migrations/001_init.sql")
 	if err != nil {
 		return fmt.Errorf("failed to read migration file: %w", err)
 	}
 
-	// Split SQL into individual statements
+	// Podela SQL-a na pojedinačne naredbe
 	statements := splitSQL(string(migrationSQL))
 
-	// Execute each statement
+	// Izvršavanje svake naredbe
 	for i, statement := range statements {
 		statement = strings.TrimSpace(statement)
 		if statement == "" || strings.HasPrefix(statement, "--") {
 			continue
 		}
 
-		// Skip CREATE DATABASE if it already exists
+		// Preskakanje CREATE DATABASE ako već postoji
 		if strings.HasPrefix(strings.ToUpper(statement), "CREATE DATABASE") {
-			log.Println("⏭️  Skipping CREATE DATABASE (already exists)")
+			log.Println("⏭️  Preskakanje CREATE DATABASE (već postoji)")
 			continue
 		}
 
-		// Execute statement
+		// Izvršavanje naredbe
 		if _, err := DB.Exec(statement); err != nil {
-			// Ignore "table already exists" errors
+			// Ignorisanje grešaka "tabela već postoji"
 			if strings.Contains(err.Error(), "already exists") {
-				log.Printf("⏭️  Table already exists, skipping...")
+				log.Printf("⏭️  Tabela već postoji, preskače se...")
 				continue
 			}
-			// Ignore "database exists" errors
+			// Ignorisanje grešaka "baza postoji"
 			if strings.Contains(err.Error(), "database exists") {
 				continue
 			}
@@ -50,25 +50,25 @@ func RunMigrations() error {
 		}
 	}
 
-	log.Println("✅ Migrations completed successfully")
+	log.Println("✅ Migracije uspešno završene")
 	return nil
 }
 
-// splitSQL splits SQL string into individual statements
+// splitSQL deli SQL string na pojedinačne naredbe
 func splitSQL(sql string) []string {
-	// Remove comments and split by semicolon
+	// Uklanjanje komentara i podela po tački-zapeti
 	lines := strings.Split(sql, "\n")
 	var cleanedLines []string
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
-		// Skip empty lines and comments
+		// Preskakanje praznih linija i komentara
 		if line == "" || strings.HasPrefix(line, "--") {
 			continue
 		}
 		cleanedLines = append(cleanedLines, line)
 	}
 
-	// Join and split by semicolon
+	// Spajanje i podela po tački-zapeti
 	fullSQL := strings.Join(cleanedLines, " ")
 	statements := strings.Split(fullSQL, ";")
 
@@ -83,7 +83,7 @@ func splitSQL(sql string) []string {
 	return result
 }
 
-// min returns the minimum of two integers
+// min vraća minimum od dva cela broja
 func min(a, b int) int {
 	if a < b {
 		return a
@@ -91,79 +91,79 @@ func min(a, b int) int {
 	return b
 }
 
-// EnsureTablesExist checks if all required tables exist and creates them if needed
+// EnsureTablesExist proverava da li sve potrebne tabele postoje i kreira ih ako je potrebno
 func EnsureTablesExist() error {
-	log.Println("🔍 Checking if all tables exist...")
+	log.Println("🔍 Provera da li sve tabele postoje...")
 
-	// Check and create users table
+	// Provera i kreiranje users tabele
 	if err := ensureTable("users", createUsersTableSQL); err != nil {
 		return err
 	}
 
-	// Ensure users has role column (without CHECK constraint to avoid issues)
+	// Osiguravanje da users ima role kolonu (bez CHECK constraint-a da bi se izbegli problemi)
 	if err := ensureColumn("users", "role", "ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user' AFTER goal"); err != nil {
 		return err
 	}
 	
-	// Ensure users has height column
+	// Osiguravanje da users ima height kolonu
 	if err := ensureColumn("users", "height", "ALTER TABLE users ADD COLUMN height DECIMAL(5, 2) NULL AFTER role"); err != nil {
 		return err
 	}
 	
-	// Ensure users has weight column
+	// Osiguravanje da users ima weight kolonu
 	if err := ensureColumn("users", "weight", "ALTER TABLE users ADD COLUMN weight DECIMAL(5, 2) NULL AFTER height"); err != nil {
 		return err
 	}
 	
-	// Fix role column if it has issues (remove CHECK constraint if it causes problems)
+	// Popravka role kolone ako ima problema (uklanjanje CHECK constraint-a ako pravi probleme)
 	if err := fixRoleColumn(); err != nil {
 		log.Printf("⚠️  Warning: Could not fix role column: %v", err)
 	}
 
-	// Check and create workouts table
+	// Provera i kreiranje workouts tabele
 	if err := ensureTable("workouts", createWorkoutsTableSQL); err != nil {
 		return err
 	}
 
-	// Ensure workouts has calories_burned column
+	// Osiguravanje da workouts ima calories_burned kolonu
 	if err := ensureColumn("workouts", "calories_burned", "ALTER TABLE workouts ADD COLUMN calories_burned DECIMAL(10, 2) DEFAULT 0 AFTER duration"); err != nil {
 		return err
 	}
 
-	// Check and create progress table
+	// Provera i kreiranje progress tabele
 	if err := ensureTable("progress", createProgressTableSQL); err != nil {
 		return err
 	}
 
-	// Ensure progress has progress_date column
+	// Osiguravanje da progress ima progress_date kolonu
 	if err := ensureColumn("progress", "progress_date", "ALTER TABLE progress ADD COLUMN progress_date DATE NOT NULL DEFAULT (CURDATE()) AFTER notes"); err != nil {
 		return err
 	}
 
-	// Fix existing data issues
+	// Popravka postojećih problema sa podacima
 	if err := fixExistingData(); err != nil {
 		log.Printf("⚠️  Warning: Failed to fix existing data: %v", err)
-		// Don't fail if this errors, just log it
+		// Ne propadati ako ovo baca grešku, samo logovati
 	}
 
-	log.Println("✅ All tables and columns exist")
+	log.Println("✅ Sve tabele i kolone postoje")
 	return nil
 }
 
-// fixExistingData fixes common data issues in existing tables
+// fixExistingData popravlja uobičajene probleme sa podacima u postojećim tabelama
 func fixExistingData() error {
-	// Fix NULL passwords (set to empty string, users will need to reset)
+	// Popravka NULL lozinki (postavljanje na prazan string, korisnici će morati da resetuju)
 	_, err := DB.Exec("UPDATE users SET password = '' WHERE password IS NULL")
 	if err != nil {
 		log.Printf("⚠️  Could not fix NULL passwords: %v", err)
 	}
 
-	// Try to fix invalid roles - this might fail due to CHECK constraint
-	// If it fails, users with invalid roles will need to be fixed manually or deleted
+	// Pokušaj popravke nevažećih uloga - ovo može da ne uspe zbog CHECK constraint-a
+	// Ako ne uspe, korisnici sa nevažećim ulogama će morati da se poprave ručno ili obrišu
 	_, err = DB.Exec("UPDATE users SET role = 'user' WHERE role IS NULL OR role = '' OR role NOT IN ('admin', 'user', 'premium')")
 	if err != nil {
-		// This is expected to fail if CHECK constraint is strict
-		// Log it but don't fail - users can be fixed manually
+		// Ovo je očekivano da ne uspe ako je CHECK constraint strog
+		// Logovati ali ne propadati - korisnici mogu biti popravljeni ručno
 		log.Printf("⚠️  Could not auto-fix invalid roles (CHECK constraint may block this). You may need to fix manually in MySQL.")
 		log.Printf("💡 To fix manually, run in MySQL: DELETE FROM users WHERE role NOT IN ('admin', 'user', 'premium') OR role IS NULL;")
 	}
@@ -211,7 +211,7 @@ func ensureColumn(tableName, columnName, alterSQL string) error {
 	if !exists {
 		log.Printf("📝 Adding column %s to table %s", columnName, tableName)
 		if _, err := DB.Exec(alterSQL); err != nil {
-			// Ignore "Duplicate column" errors
+			// Ignorisanje grešaka "Duplikat kolone"
 			if strings.Contains(err.Error(), "Duplicate column") {
 				log.Printf("✓ Column %s.%s already exists", tableName, columnName)
 				return nil
@@ -226,9 +226,9 @@ func ensureColumn(tableName, columnName, alterSQL string) error {
 	return nil
 }
 
-// fixRoleColumn attempts to fix the role column structure
+// fixRoleColumn pokušava da popravi strukturu role kolone
 func fixRoleColumn() error {
-	// Check current column structure
+	// Provera trenutne strukture kolone
 	var dataType, columnDefault, isNullable, columnType string
 	err := DB.QueryRow(
 		"SELECT DATA_TYPE, COLUMN_DEFAULT, IS_NULLABLE, COLUMN_TYPE FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'users' AND column_name = 'role'",
@@ -240,29 +240,29 @@ func fixRoleColumn() error {
 	
 	log.Printf("🔍 Role column: type=%s, full_type=%s, default=%s, nullable=%s", dataType, columnType, columnDefault, isNullable)
 	
-	// If it's ENUM or has CHECK constraint issues, modify it to simple VARCHAR
+	// Ako je ENUM ili ima probleme sa CHECK constraint-om, modifikovati na jednostavan VARCHAR
 	if dataType == "enum" || strings.Contains(strings.ToLower(columnType), "check") {
-		log.Println("🔧 Role column is ENUM or has CHECK constraint, converting to VARCHAR...")
+		log.Println("🔧 Role kolona je ENUM ili ima CHECK constraint, konvertovanje u VARCHAR...")
 		_, err = DB.Exec("ALTER TABLE users MODIFY COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user'")
 		if err != nil {
 			log.Printf("⚠️  Could not modify role column: %v", err)
 			return fmt.Errorf("failed to modify role column: %w", err)
 		}
-		log.Println("✅ Role column converted to VARCHAR")
+		log.Println("✅ Role kolona konvertovana u VARCHAR")
 	} else {
-		// Just ensure it's correct
+		// Samo osigurati da je ispravna
 		_, err = DB.Exec("ALTER TABLE users MODIFY COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user'")
 		if err != nil {
 			log.Printf("⚠️  Could not modify role column (might already be correct): %v", err)
 		} else {
-			log.Println("✅ Role column structure verified")
+			log.Println("✅ Struktura role kolone verifikovana")
 		}
 	}
 	
 	return nil
 }
 
-// SQL statements for creating tables
+// SQL naredbe za kreiranje tabela
 const createUsersTableSQL = `
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -314,7 +314,3 @@ CREATE TABLE IF NOT EXISTS progress (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 `
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

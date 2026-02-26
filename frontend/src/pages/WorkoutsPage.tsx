@@ -20,10 +20,7 @@ const WorkoutsPage: React.FC = () => {
     workout_date: new Date().toISOString().split('T')[0],
   });
 
-<<<<<<< HEAD
-  // Fetch workouts on component mount
-=======
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
+  // Uzimanje treninga pri mount-ovanju komponente
   useEffect(() => {
     fetchWorkouts();
   }, []);
@@ -36,10 +33,7 @@ const WorkoutsPage: React.FC = () => {
       setWorkouts(data || []);
     } catch (err: any) {
       console.error('Error fetching workouts:', err);
-<<<<<<< HEAD
-      // Handle JSON error response from backend
-=======
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
+      // Rukovanje JSON odgovorom sa greškom od backend-a
       const errorData = err.response?.data;
       let errorMessage = 'Failed to fetch workouts';
       if (errorData?.message) {
@@ -52,11 +46,8 @@ const WorkoutsPage: React.FC = () => {
         errorMessage = err.message;
       }
       setError(errorMessage);
-<<<<<<< HEAD
-      setWorkouts([]); // Set empty array on error
-=======
+      setWorkouts([]); // Postavljanje praznog niza pri grešci
       setWorkouts([]);
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
     } finally {
       setLoading(false);
     }
@@ -113,10 +104,7 @@ const WorkoutsPage: React.FC = () => {
       handleCloseModal();
       fetchWorkouts();
     } catch (err: any) {
-<<<<<<< HEAD
-      // Handle JSON error response from backend
-=======
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
+      // Rukovanje JSON odgovorom sa greškom od backend-a
       const errorData = err.response?.data;
       if (errorData?.message) {
         setError(errorData.message);
@@ -135,7 +123,7 @@ const WorkoutsPage: React.FC = () => {
       await workoutAPI.delete(id);
       fetchWorkouts();
     } catch (err: any) {
-      // Handle JSON error response from backend
+      // Rukovanje JSON odgovorom sa greškom od backend-a
       const errorData = err.response?.data;
       if (errorData?.message) {
         setError(errorData.message);
@@ -251,7 +239,3 @@ const WorkoutsPage: React.FC = () => {
 };
 
 export default WorkoutsPage;
-<<<<<<< HEAD
-
-=======
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

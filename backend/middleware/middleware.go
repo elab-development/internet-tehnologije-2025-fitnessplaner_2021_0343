@@ -81,7 +81,7 @@ func Auth(next http.Handler) http.Handler {
 	})
 }
 
-// GetUserID extracts user ID from context
+// GetUserID izvlači korisnički ID iz konteksta
 func GetUserID(r *http.Request) int {
 	if userID, ok := r.Context().Value(UserIDKey).(int); ok {
 		return userID
@@ -89,7 +89,7 @@ func GetUserID(r *http.Request) int {
 	return 0
 }
 
-// GetEmail extracts email from context
+// GetEmail izvlači email iz konteksta
 func GetEmail(r *http.Request) string {
 	if email, ok := r.Context().Value(EmailKey).(string); ok {
 		return email
@@ -97,7 +97,3 @@ func GetEmail(r *http.Request) string {
 	return ""
 }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

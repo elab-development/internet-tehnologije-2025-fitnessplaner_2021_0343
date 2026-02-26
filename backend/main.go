@@ -9,20 +9,16 @@ import (
 )
 
 func main() {
-<<<<<<< HEAD
-	// Initialize database
-=======
 	// Inicijalizacija baze podataka
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 	if err := utils.InitDB(); err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 	defer utils.CloseDB()
 
-	// Setup routes
+	// Podešavanje ruta
 	handler := routes.SetupRoutes()
 
-	// Start server
+	// Pokretanje servera
 	port := ":8080"
 	log.Printf("🚀 Server starting on port %s", port)
 	log.Printf("📡 API endpoints available at http://localhost%s/api", port)

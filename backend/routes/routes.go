@@ -7,51 +7,29 @@ import (
 	"backend/middleware"
 )
 
-<<<<<<< HEAD
-// SetupRoutes configures all routes
+// SetupRoutes konfiguriše sve rute
 func SetupRoutes() http.Handler {
 	mux := http.NewServeMux()
 
-	// Public routes
+	// Javne rute
 	mux.HandleFunc("/api/register", controllers.Register)
 	mux.HandleFunc("/api/login", controllers.Login)
 
-	// Protected routes - Auth
+	// Zaštićene rute - Autentifikacija
 	mux.Handle("/api/logout", middleware.Auth(http.HandlerFunc(controllers.Logout)))
 	mux.Handle("/api/profile", middleware.Auth(http.HandlerFunc(controllers.GetProfile)))
 
-	// Protected routes - Food & Meal Plan
+	// Zaštićene rute - Hrana i Meal Plan
 	mux.Handle("/api/food/search", middleware.Auth(http.HandlerFunc(controllers.SearchFood)))
 	mux.Handle("/api/meal-plan", middleware.Auth(http.HandlerFunc(controllers.GenerateMealPlan)))
 
-	// Protected routes - Workouts (GET, POST, PUT, DELETE)
-=======
-func SetupRoutes() http.Handler {
-	mux := http.NewServeMux()
-
-	// Public rute
-	mux.HandleFunc("/api/register", controllers.Register)
-	mux.HandleFunc("/api/login", controllers.Login)
-
-	// Protected rute - Auth
-	mux.Handle("/api/logout", middleware.Auth(http.HandlerFunc(controllers.Logout)))
-	mux.Handle("/api/profile", middleware.Auth(http.HandlerFunc(controllers.GetProfile)))
-
-	mux.Handle("/api/food/search", middleware.Auth(http.HandlerFunc(controllers.SearchFood)))
-	mux.Handle("/api/meal-plan", middleware.Auth(http.HandlerFunc(controllers.GenerateMealPlan)))
-
-	// Protected rute - Workouts (GET, POST, PUT, DELETE)
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
+	// Zaštićene rute - Treninzi (GET, POST, PUT, DELETE)
 	mux.Handle("/api/workouts", middleware.Auth(http.HandlerFunc(controllers.GetWorkouts)))
 	mux.Handle("/api/workouts/create", middleware.Auth(http.HandlerFunc(controllers.CreateWorkout)))
 	mux.Handle("/api/workouts/update", middleware.Auth(http.HandlerFunc(controllers.UpdateWorkout)))
 	mux.Handle("/api/workouts/delete", middleware.Auth(http.HandlerFunc(controllers.DeleteWorkout)))
 
-<<<<<<< HEAD
-	// Protected routes - Progress (GET, POST, PUT, DELETE)
-=======
-	// Protected rute - Progress (GET, POST, PUT, DELETE)
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
+	// Zaštićene rute - Napredak (GET, POST, PUT, DELETE)
 	mux.Handle("/api/progress", middleware.Auth(http.HandlerFunc(controllers.GetProgress)))
 	mux.Handle("/api/progress/create", middleware.Auth(http.HandlerFunc(controllers.CreateProgress)))
 	mux.Handle("/api/progress/update", middleware.Auth(http.HandlerFunc(controllers.UpdateProgress)))
@@ -63,7 +41,7 @@ func SetupRoutes() http.Handler {
 		w.Write([]byte("OK"))
 	})
 
-	// Apply middleware
+	// Primena middleware-a
 	handler := middleware.CORS(mux)
 	handler = middleware.Logging(handler)
 

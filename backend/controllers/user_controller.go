@@ -52,8 +52,8 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set default role - ALWAYS use "user" for new registrations
-	// Don't trust frontend to send correct role value - force it to be "user"
+	// Postavljanje podrazumevane uloge - UVEK koristiti "user" za nove registracije
+	// Ne verovati frontend-u da će poslati ispravnu vrednost uloge - forsirati da bude "user"
 	role := "user"
 
 	// Log ako je pokusaj da se setuje druga uloga
@@ -270,7 +270,3 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

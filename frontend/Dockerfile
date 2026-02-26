@@ -19,9 +19,9 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Install dependencies
+# Install dependencies (including devDependencies for build)
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install && npm list vite
 
 # Copy the rest of the app and build
 COPY . .
@@ -32,6 +32,9 @@ FROM nginx:1.27-alpine
 
 # Copy built assets from the build stage
 COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose default nginx port
 EXPOSE 80

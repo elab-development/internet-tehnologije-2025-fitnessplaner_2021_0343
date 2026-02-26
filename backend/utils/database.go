@@ -11,18 +11,18 @@ import (
 
 var DB *sql.DB
 
-// InitDB initializes the database connection
+// InitDB inicijalizuje konekciju sa bazom podataka
 func InitDB() error {
-	// Get database credentials from environment variables or use defaults
+	// Uzimanje kredencijala iz environment promenljivih ili korišćenje podrazumevanih vrednosti
 	dbUser := getEnv("DB_USER", "root")
 	dbPassword := getEnv("DB_PASSWORD", "Vojislav123!")
 	dbHost := getEnv("DB_HOST", "127.0.0.1")
 	dbPort := getEnv("DB_PORT", "3306")
 	dbName := getEnv("DB_NAME", "app_db")
 
-	log.Printf("🔌 Attempting to connect to MySQL server: %s@%s:%s", dbUser, dbHost, dbPort)
+	log.Printf("🔌 Pokušaj konekcije na MySQL server: %s@%s:%s", dbUser, dbHost, dbPort)
 
-	// First, connect to MySQL server without specifying database
+	// Prvo, konekcija na MySQL server bez specificiranja baze
 	dsnWithoutDB := fmt.Sprintf("%s:%s@tcp(%s:%s)/?charset=utf8mb4&parseTime=True&loc=Local",
 		dbUser, dbPassword, dbHost, dbPort)
 
@@ -32,22 +32,22 @@ func InitDB() error {
 	}
 	defer tempDB.Close()
 
-	// Test connection to MySQL server
+	// Testiranje konekcije na MySQL server
 	if err := tempDB.Ping(); err != nil {
 		return fmt.Errorf("failed to ping MySQL server: %w\n💡 Possible issues:\n   - MySQL server is not running\n   - Wrong username/password\n   - Wrong host/port", err)
 	}
 
-	log.Println("✅ Connected to MySQL server")
+	log.Println("✅ Konektovano na MySQL server")
 
-	// Create database if it doesn't exist
-	log.Printf("📦 Checking if database '%s' exists...", dbName)
+	// Kreiranje baze ako ne postoji
+	log.Printf("📦 Provera da li baza '%s' postoji...", dbName)
 	_, err = tempDB.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci", dbName))
 	if err != nil {
 		return fmt.Errorf("failed to create database: %w", err)
 	}
-	log.Printf("✅ Database '%s' ready", dbName)
+	log.Printf("✅ Baza '%s' spremna", dbName)
 
-	// Now connect to the specific database
+	// Sada konekcija na specifičnu bazu
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		dbUser, dbPassword, dbHost, dbPort, dbName)
 
@@ -56,18 +56,18 @@ func InitDB() error {
 		return fmt.Errorf("failed to open database connection: %w", err)
 	}
 
-	// Test the connection
+	// Testiranje konekcije
 	if err := DB.Ping(); err != nil {
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	// Set connection pool settings
+	// Podešavanje connection pool-a
 	DB.SetMaxOpenConns(25)
 	DB.SetMaxIdleConns(5)
 
-	log.Println("✅ Database connected successfully")
+	log.Println("✅ Baza podataka uspešno konektovana")
 
-	// Automatically ensure all tables exist
+	// Automatsko osiguravanje da sve tabele postoje
 	if err := EnsureTablesExist(); err != nil {
 		return fmt.Errorf("failed to ensure tables exist: %w", err)
 	}
@@ -75,7 +75,7 @@ func InitDB() error {
 	return nil
 }
 
-// getEnv gets an environment variable or returns a default value
+// getEnv uzima environment promenljivu ili vraća podrazumevanu vrednost
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
@@ -83,14 +83,10 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-// CloseDB closes the database connection
+// CloseDB zatvara konekciju sa bazom podataka
 func CloseDB() error {
 	if DB != nil {
 		return DB.Close()
 	}
 	return nil
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

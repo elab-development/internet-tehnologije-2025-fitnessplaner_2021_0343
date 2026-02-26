@@ -73,7 +73,3 @@ func CheckPassword(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

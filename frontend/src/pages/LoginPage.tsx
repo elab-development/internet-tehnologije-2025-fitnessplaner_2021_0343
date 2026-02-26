@@ -22,7 +22,7 @@ const LoginPage: React.FC = () => {
       await login({ email, password });
       navigate('/dashboard');
     } catch (err: any) {
-      // Handle JSON error response from backend
+      // Rukovanje JSON odgovorom sa greškom od backend-a
       const errorData = err.response?.data;
       if (errorData?.message) {
         setError(errorData.message);

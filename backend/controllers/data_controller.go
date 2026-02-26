@@ -75,6 +75,20 @@ func CreateWorkout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Proveri da li korisnik postoji u bazi
+	var userExists int
+	err := utils.DB.QueryRow("SELECT COUNT(*) FROM users WHERE id = ?", userID).Scan(&userExists)
+	if err != nil {
+		log.Printf("❌ Error checking if user exists: %v", err)
+		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
+		return
+	}
+	if userExists == 0 {
+		log.Printf("❌ User with ID %d does not exist in database", userID)
+		http.Error(w, "User not found. Please log in again.", http.StatusUnauthorized)
+		return
+	}
+
 	var req models.WorkoutRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -86,6 +100,8 @@ func CreateWorkout(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid date format. Use YYYY-MM-DD", http.StatusBadRequest)
 		return
 	}
+
+	log.Printf("📝 Creating workout for user_id=%d: name=%s, date=%s", userID, req.Name, req.WorkoutDate)
 
 	result, err := utils.DB.Exec(
 		"INSERT INTO workouts (user_id, name, description, duration, calories_burned, workout_date) VALUES (?, ?, ?, ?, ?, ?)",
@@ -277,6 +293,20 @@ func CreateProgress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Proveri da li korisnik postoji u bazi
+	var userExists int
+	err := utils.DB.QueryRow("SELECT COUNT(*) FROM users WHERE id = ?", userID).Scan(&userExists)
+	if err != nil {
+		log.Printf("❌ Error checking if user exists: %v", err)
+		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
+		return
+	}
+	if userExists == 0 {
+		log.Printf("❌ User with ID %d does not exist in database", userID)
+		http.Error(w, "User not found. Please log in again.", http.StatusUnauthorized)
+		return
+	}
+
 	var req models.ProgressRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -424,7 +454,3 @@ func DeleteProgress(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "Progress entry deleted successfully"})
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

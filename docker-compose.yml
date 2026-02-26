@@ -8,8 +8,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: Vojislav123!
       MYSQL_DATABASE: app_db
-      MYSQL_USER: root
-      MYSQL_PASSWORD: Vojislav123!
     command: [
       "--default-authentication-plugin=mysql_native_password",
       "--character-set-server=utf8mb4",
@@ -55,7 +53,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "5173:5173"
+      - "5173:80"
 
   swagger-ui:
     image: swaggerapi/swagger-ui

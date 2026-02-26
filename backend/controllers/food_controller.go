@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"backend/middleware"
@@ -91,9 +92,23 @@ func GenerateMealPlan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Proveri da li korisnik postoji u bazi
+	var userExists int
+	err := utils.DB.QueryRow("SELECT COUNT(*) FROM users WHERE id = ?", userID).Scan(&userExists)
+	if err != nil {
+		log.Printf("❌ Error checking if user exists: %v", err)
+		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
+		return
+	}
+	if userExists == 0 {
+		log.Printf("❌ User with ID %d does not exist in database", userID)
+		http.Error(w, "User not found. Please log in again.", http.StatusUnauthorized)
+		return
+	}
+
 	// Get user's goal
 	var goal string
-	err := utils.DB.QueryRow("SELECT goal FROM users WHERE id = ?", userID).Scan(&goal)
+	err = utils.DB.QueryRow("SELECT goal FROM users WHERE id = ?", userID).Scan(&goal)
 	if err != nil {
 		http.Error(w, "User not found", http.StatusNotFound)
 		return

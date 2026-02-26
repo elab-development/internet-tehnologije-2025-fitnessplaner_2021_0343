@@ -2,45 +2,32 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Card from '../components/Card';
 
-<<<<<<< HEAD
-// Predefined YouTube video IDs for different workout types
-// Popular hypertrophy/muscle building videos
-=======
-
+// Unapred definisani YouTube video ID-ovi za različite tipove treninga
 // Popularni hypertrophy/muscle building videi
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 const HYPERTROPHY_VIDEOS = [
   { id: 'TLnVgSs1YXY', title: 'Full Body Hypertrophy Workout', description: 'Complete muscle building routine for all muscle groups' },
   { id: 'g_tea8ZNk5A', title: 'Push Pull Legs Split', description: 'PPL workout program for maximum muscle growth' },
   { id: 'UItWltVZZmE', title: 'Back & Biceps Hypertrophy', description: 'Upper body muscle building focused on back and biceps' },
-  { id: 'eaLjN8x90kY', title: 'Chest & Triceps Workout', description: 'Push day hypertrophy training for chest and triceps' },
+  { id: 'eaLjN8x90kA', title: 'Chest & Triceps Workout', description: 'Push day hypertrophy training for chest and triceps' },
   { id: 'mlR6PBj8dB0', title: 'Legs & Glutes Hypertrophy', description: 'Lower body muscle building for legs and glutes' },
   { id: 'jH1b3vE3XqE', title: 'Shoulders & Arms Hypertrophy', description: 'Upper body specialization for shoulders and arms' },
 ];
 
-<<<<<<< HEAD
-// Popular cardio/weight loss videos
-=======
 // Popularni cardio/weight loss videi
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 const CARDIO_VIDEOS = [
   { id: 'mlR6PBj8dB0', title: '30 Min Full Body Cardio', description: 'High intensity fat burning workout for weight loss' },
   { id: 'jH1b3vE3XqE', title: 'HIIT Cardio Workout', description: 'High intensity interval training for maximum calorie burn' },
   { id: 'UItWltVZZmE', title: 'Fat Burning Cardio', description: 'Effective weight loss routine to burn calories' },
   { id: 'TLnVgSs1YXY', title: 'Low Impact Cardio', description: 'Beginner friendly cardio workout without jumping' },
   { id: 'g_tea8ZNk5A', title: 'Dance Cardio Workout', description: 'Fun and effective cardio session for weight loss' },
-  { id: 'eaLjN8x90kY', title: 'Treadmill Cardio Routine', description: 'Cardio workout perfect for weight loss goals' },
+  { id: 'eaLjN8x90kA', title: 'Treadmill Cardio Routine', description: 'Cardio workout perfect for weight loss goals' },
 ];
 
 const VideosPage: React.FC = () => {
   const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<'hypertrophy' | 'cardio' | null>(null);
 
-<<<<<<< HEAD
-  // Determine which videos to show based on user's goal
-=======
-  
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
+  // Određivanje koje videe prikazati na osnovu korisnikovog cilja
   const userGoal = user?.goal || 'lose_weight';
   const defaultCategory = userGoal === 'hypertrophy' ? 'hypertrophy' : 'cardio';
   const currentCategory = selectedCategory || defaultCategory;
@@ -54,11 +41,7 @@ const VideosPage: React.FC = () => {
           Based on your goal: <strong className="text-purple-600">{userGoal === 'hypertrophy' ? 'Muscle Building (Hypertrophy)' : 'Weight Loss (Cardio)'}</strong>
         </p>
         
-<<<<<<< HEAD
-        {/* Category selector */}
-=======
-        {/* Category selektor */}
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
+        {/* Selektovanje kategorije */}
         <div className="flex gap-4 mb-6">
           <button
             onClick={() => setSelectedCategory('hypertrophy')}
@@ -83,11 +66,7 @@ const VideosPage: React.FC = () => {
         </div>
       </div>
 
-<<<<<<< HEAD
-      {/* Videos Grid */}
-=======
       {/* Grid sa videima */}
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {videos.map((video, index) => (
           <Card key={`${video.id}-${index}`} className="overflow-hidden">
@@ -119,7 +98,3 @@ const VideosPage: React.FC = () => {
 };
 
 export default VideosPage;
-<<<<<<< HEAD
-
-=======
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

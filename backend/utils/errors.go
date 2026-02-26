@@ -5,13 +5,13 @@ import (
 	"net/http"
 )
 
-// ErrorResponse represents a JSON error response
+// ErrorResponse predstavlja JSON odgovor sa greškom
 type ErrorResponse struct {
 	Error   string `json:"error"`
 	Message string `json:"message,omitempty"`
 }
 
-// JSONError sends a JSON error response
+// JSONError šalje JSON odgovor sa greškom
 func JSONError(w http.ResponseWriter, message string, statusCode int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)

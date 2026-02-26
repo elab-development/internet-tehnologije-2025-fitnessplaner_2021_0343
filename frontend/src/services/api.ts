@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-// Get API URL from environment or use default
+// Get API URL iz environment-a ili korist default
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-// Create axios instance
+// Kreiraj axios instancu
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -11,7 +11,7 @@ const api = axios.create({
   },
 });
 
-// Add token to requests if available
+// Dodaj token zahtevu ako je dostupan
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');

@@ -12,7 +12,7 @@ import (
 	"backend/utils"
 )
 
-// Open Food Facts API response
+// Open Food Facts API odgovor
 type OFFProduct struct {
 	Product struct {
 		ProductName string `json:"product_name"`
@@ -26,7 +26,7 @@ type OFFProduct struct {
 	Status int `json:"status"`
 }
 
-// SearchFood searches for food by barcode using Open Food Facts API
+// SearchFood pretražuje hranu koristeći Open Food Facts API
 func SearchFood(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -39,7 +39,7 @@ func SearchFood(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Call Open Food Facts API
+	// Pozivanje Open Food Facts API
 	url := fmt.Sprintf("https://world.openfoodfacts.org/api/v2/product/%s.json", req.Barcode)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -78,14 +78,14 @@ func SearchFood(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(food)
 }
 
-// GenerateMealPlan generates a meal plan based on user's goal
+// GenerateMealPlan generiše plan ishrane na osnovu korisnikov cilja
 func GenerateMealPlan(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Get user ID from context (set by auth middleware)
+	// Preuzimaje user ID iz konteksta (setovano pomoću auth middleware-a)
 	userID := middleware.GetUserID(r)
 	if userID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -106,7 +106,7 @@ func GenerateMealPlan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user's goal
+	// Preuzimanje korisnikovog cilja
 	var goal string
 	err = utils.DB.QueryRow("SELECT goal FROM users WHERE id = ?", userID).Scan(&goal)
 	if err != nil {
@@ -114,7 +114,7 @@ func GenerateMealPlan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Example barcodes - in production, this would be more sophisticated
+	// primer barkoda
 	barcodes := []string{"3274080005003", "3017620425035"}
 	var foods []models.Food
 
@@ -151,7 +151,7 @@ func GenerateMealPlan(w http.ResponseWriter, r *http.Request) {
 		foods = append(foods, food)
 	}
 
-	// Calculate totals
+	// Izracunavanje ukupne kalorije
 	var totalCalories, totalProtein, totalCarbs, totalFat float64
 	for _, food := range foods {
 		totalCalories += food.Calories

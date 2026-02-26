@@ -2,29 +2,29 @@ FROM golang:1.22-alpine AS builder
 
 WORKDIR /app
 
-# Install build tools
+# Instalacija build alatki
 RUN apk add --no-cache git
 
-# Go module files
+# Go module fajlovi
 COPY go.mod ./
 RUN go mod download
 
 # Copy the rest of the backend source
 COPY . .
 
-# Ensure go.sum is up to date and build
+# Osiguravanje go.sum je up to date & build
 RUN go mod tidy && go build -o server ./main.go
 
 FROM alpine:3.19
 
 WORKDIR /app
 
-# Certificates for HTTPS connections if needed
+# HTTPS konekcija
 RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /app/server .
 
-# Default environment variables (can be overridden in docker-compose)
+# Default environment varijable 
 ENV DB_USER=root \
     DB_PASSWORD=Vojislav123! \
     DB_HOST=db \

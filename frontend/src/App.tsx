@@ -11,7 +11,7 @@ import ProfilePage from './pages/ProfilePage';
 import VideosPage from './pages/VideosPage';
 import './App.css';
 
-// Protected Route Component
+// Protected Route komponenta
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 

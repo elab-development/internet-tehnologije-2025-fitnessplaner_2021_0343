@@ -60,13 +60,16 @@ services:
     container_name: fitness-swagger
     restart: unless-stopped
     environment:
-      # Swagger UI will load the OpenAPI file from nginx static files
-      SWAGGER_JSON: /openapi.yaml
-    volumes:
-      - ./backend/docs/openapi.yaml:/usr/share/nginx/html/openapi.yaml:ro
+      # Swagger UI will load the OpenAPI file from backend server
+      # Using host.docker.internal to access host's localhost from container
+      SWAGGER_JSON_URL: http://host.docker.internal:8080/openapi.yaml
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - backend
     ports:
       - "8081:8080"
-    # Swagger UI doesn't need backend/db - it only displays documentation
+    # Swagger UI loads OpenAPI spec from backend server
 
 volumes:
   db_data:

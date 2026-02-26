@@ -67,9 +67,19 @@ func InitDB() error {
 
 	log.Println("✅ Baza podataka uspešno konektovana")
 
-	// Automatsko osiguravanje da sve tabele postoje
+	// Automatsko osiguravanje da sve tabele postoje (fallback pristup)
 	if err := EnsureTablesExist(); err != nil {
-		return fmt.Errorf("failed to ensure tables exist: %w", err)
+		log.Printf("⚠️  EnsureTablesExist failed: %v", err)
+		log.Println("🔄 Pokušavanje sa RunMigrations...")
+		// Pokušaj sa migracijama ako EnsureTablesExist ne uspe
+		if err := RunMigrations(); err != nil {
+			return fmt.Errorf("failed to run migrations: %w", err)
+		}
+	} else {
+		// Ako EnsureTablesExist uspe, pokreni migracije za dodatne izmene
+		if err := RunMigrations(); err != nil {
+			log.Printf("⚠️  RunMigrations failed: %v (nastavlja se sa postojećim tabelama)", err)
+		}
 	}
 
 	return nil

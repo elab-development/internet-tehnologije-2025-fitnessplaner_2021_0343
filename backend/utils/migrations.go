@@ -4,53 +4,152 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"sort"
 	"strings"
 )
 
-// RunMigrations izvršava migracije baze podataka
+// initMigrationsTable kreira tabelu za praćenje migracija ako ne postoji
+func initMigrationsTable() error {
+	createTableSQL := `
+	CREATE TABLE IF NOT EXISTS schema_migrations (
+		version VARCHAR(255) PRIMARY KEY,
+		applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+	`
+
+	if _, err := DB.Exec(createTableSQL); err != nil {
+		return fmt.Errorf("failed to create migrations table: %w", err)
+	}
+
+	return nil
+}
+
+// isMigrationApplied proverava da li je migracija već primenjena
+func isMigrationApplied(version string) (bool, error) {
+	var count int
+	err := DB.QueryRow(
+		"SELECT COUNT(*) FROM schema_migrations WHERE version = ?",
+		version,
+	).Scan(&count)
+
+	if err != nil {
+		return false, fmt.Errorf("failed to check migration status: %w", err)
+	}
+
+	return count > 0, nil
+}
+
+// markMigrationApplied označava migraciju kao primenjenu
+func markMigrationApplied(version string) error {
+	_, err := DB.Exec(
+		"INSERT INTO schema_migrations (version) VALUES (?)",
+		version,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to mark migration as applied: %w", err)
+	}
+	return nil
+}
+
+// RunMigrations izvršava sve migracije iz migrations/ foldera
 func RunMigrations() error {
 	log.Println("🔄 Pokretanje migracija baze podataka...")
 
-	// Čitanje migration fajla
-	migrationSQL, err := os.ReadFile("migrations/001_init.sql")
+	// Kreiranje tabele za praćenje migracija
+	if err := initMigrationsTable(); err != nil {
+		return fmt.Errorf("failed to initialize migrations table: %w", err)
+	}
+
+	// Pronalaženje svih SQL fajlova u migrations/ folderu
+	migrationsDir := "migrations"
+	entries, err := os.ReadDir(migrationsDir)
 	if err != nil {
-		return fmt.Errorf("failed to read migration file: %w", err)
+		return fmt.Errorf("failed to read migrations directory: %w", err)
 	}
 
-	// Podela SQL-a na pojedinačne naredbe
-	statements := splitSQL(string(migrationSQL))
-
-	// Izvršavanje svake naredbe
-	for i, statement := range statements {
-		statement = strings.TrimSpace(statement)
-		if statement == "" || strings.HasPrefix(statement, "--") {
-			continue
-		}
-
-		// Preskakanje CREATE DATABASE ako već postoji
-		if strings.HasPrefix(strings.ToUpper(statement), "CREATE DATABASE") {
-			log.Println("⏭️  Preskakanje CREATE DATABASE (već postoji)")
-			continue
-		}
-
-		// Izvršavanje naredbe
-		if _, err := DB.Exec(statement); err != nil {
-			// Ignorisanje grešaka "tabela već postoji"
-			if strings.Contains(err.Error(), "already exists") {
-				log.Printf("⏭️  Tabela već postoji, preskače se...")
-				continue
-			}
-			// Ignorisanje grešaka "baza postoji"
-			if strings.Contains(err.Error(), "database exists") {
-				continue
-			}
-			log.Printf("❌ Error executing migration statement %d: %v", i+1, err)
-			log.Printf("Statement: %s", statement[:min(100, len(statement))])
-			return fmt.Errorf("migration failed at statement %d: %w", i+1, err)
+	// Filtriranje i sortiranje migracija
+	var migrationFiles []string
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".sql") {
+			migrationFiles = append(migrationFiles, entry.Name())
 		}
 	}
 
-	log.Println("✅ Migracije uspešno završene")
+	if len(migrationFiles) == 0 {
+		log.Println("⚠️  Nema migracija za izvršavanje")
+		return nil
+	}
+
+	// Sortiranje po imenu (001_init.sql, 002_add_column.sql, itd.)
+	sort.Strings(migrationFiles)
+
+	// Izvršavanje svake migracije
+	for _, filename := range migrationFiles {
+		version := strings.TrimSuffix(filename, ".sql")
+
+		// Provera da li je migracija već primenjena
+		applied, err := isMigrationApplied(version)
+		if err != nil {
+			return fmt.Errorf("failed to check migration %s: %w", version, err)
+		}
+
+		if applied {
+			log.Printf("⏭️  Migracija %s već je primenjena, preskače se", version)
+			continue
+		}
+
+		log.Printf("📝 Primena migracije: %s", filename)
+
+		// Čitanje migration fajla
+		migrationPath := filepath.Join(migrationsDir, filename)
+		migrationSQL, err := os.ReadFile(migrationPath)
+		if err != nil {
+			return fmt.Errorf("failed to read migration file %s: %w", filename, err)
+		}
+
+		// Podela SQL-a na pojedinačne naredbe
+		statements := splitSQL(string(migrationSQL))
+
+		// Izvršavanje svake naredbe
+		for i, statement := range statements {
+			statement = strings.TrimSpace(statement)
+			if statement == "" || strings.HasPrefix(statement, "--") {
+				continue
+			}
+
+			// Preskakanje CREATE DATABASE ako već postoji
+			if strings.HasPrefix(strings.ToUpper(statement), "CREATE DATABASE") {
+				log.Println("⏭️  Preskakanje CREATE DATABASE (već postoji)")
+				continue
+			}
+
+			// Izvršavanje naredbe
+			if _, err := DB.Exec(statement); err != nil {
+				errStr := strings.ToLower(err.Error())
+				// Ignorisanje grešaka koje su očekivane (tabela/kolona/indeks već postoji)
+				if strings.Contains(errStr, "already exists") ||
+					strings.Contains(errStr, "duplicate column") ||
+					strings.Contains(errStr, "duplicate key name") ||
+					strings.Contains(errStr, "database exists") {
+					log.Printf("⏭️  Već postoji, preskače se: %s", statement[:min(50, len(statement))])
+					continue
+				}
+				log.Printf("❌ Greška pri izvršavanju migracije %s, naredba %d: %v", version, i+1, err)
+				log.Printf("Naredba: %s", statement[:min(100, len(statement))])
+				return fmt.Errorf("migration %s failed at statement %d: %w", version, i+1, err)
+			}
+		}
+
+		// Označavanje migracije kao primenjene
+		if err := markMigrationApplied(version); err != nil {
+			return fmt.Errorf("failed to mark migration %s as applied: %w", version, err)
+		}
+
+		log.Printf("✅ Migracija %s uspešno primenjena", version)
+	}
+
+	log.Println("✅ Sve migracije uspešno završene")
 	return nil
 }
 
@@ -104,17 +203,17 @@ func EnsureTablesExist() error {
 	if err := ensureColumn("users", "role", "ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user' AFTER goal"); err != nil {
 		return err
 	}
-	
+
 	// Osiguravanje da users ima height kolonu
 	if err := ensureColumn("users", "height", "ALTER TABLE users ADD COLUMN height DECIMAL(5, 2) NULL AFTER role"); err != nil {
 		return err
 	}
-	
+
 	// Osiguravanje da users ima weight kolonu
 	if err := ensureColumn("users", "weight", "ALTER TABLE users ADD COLUMN weight DECIMAL(5, 2) NULL AFTER height"); err != nil {
 		return err
 	}
-	
+
 	// Popravka role kolone ako ima problema (uklanjanje CHECK constraint-a ako pravi probleme)
 	if err := fixRoleColumn(); err != nil {
 		log.Printf("⚠️  Warning: Could not fix role column: %v", err)
@@ -233,13 +332,13 @@ func fixRoleColumn() error {
 	err := DB.QueryRow(
 		"SELECT DATA_TYPE, COLUMN_DEFAULT, IS_NULLABLE, COLUMN_TYPE FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'users' AND column_name = 'role'",
 	).Scan(&dataType, &columnDefault, &isNullable, &columnType)
-	
+
 	if err != nil {
 		return fmt.Errorf("failed to check role column: %w", err)
 	}
-	
+
 	log.Printf("🔍 Role column: type=%s, full_type=%s, default=%s, nullable=%s", dataType, columnType, columnDefault, isNullable)
-	
+
 	// Ako je ENUM ili ima probleme sa CHECK constraint-om, modifikovati na jednostavan VARCHAR
 	if dataType == "enum" || strings.Contains(strings.ToLower(columnType), "check") {
 		log.Println("🔧 Role kolona je ENUM ili ima CHECK constraint, konvertovanje u VARCHAR...")
@@ -258,7 +357,7 @@ func fixRoleColumn() error {
 			log.Println("✅ Struktura role kolone verifikovana")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -313,4 +412,3 @@ CREATE TABLE IF NOT EXISTS progress (
     INDEX idx_progress_date (progress_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 `
-

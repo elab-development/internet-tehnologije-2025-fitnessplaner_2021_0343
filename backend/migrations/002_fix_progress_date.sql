@@ -1,26 +1,15 @@
-<<<<<<< HEAD
--- Fix progress table - add progress_date column
-USE app_db;
+-- Dodavanje progress_date kolone u progress tabelu
+-- Ova migracija dodaje kolonu progress_date ako ne postoji
+-- Greške "Duplicate column" će biti ignorisane
 
--- Try to add the column (will fail if it already exists, which is OK)
+-- Dodavanje kolone
 ALTER TABLE progress 
 ADD COLUMN progress_date DATE NOT NULL DEFAULT (CURDATE()) AFTER notes;
 
--- Update existing rows
-=======
-Dodavanje progress_date column
-USE app_db;
-
-ALTER TABLE progress 
-ADD COLUMN progress_date DATE NOT NULL DEFAULT (CURDATE()) AFTER notes;
-
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
+-- Ažuriranje postojećih redova
 UPDATE progress 
 SET progress_date = CURDATE() 
 WHERE progress_date IS NULL OR progress_date = '0000-00-00';
 
-<<<<<<< HEAD
--- Add index
-=======
->>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
+-- Kreiranje indeksa
 CREATE INDEX idx_progress_date ON progress(progress_date);

@@ -23,6 +23,8 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /app/server .
+# Kopiraj OpenAPI specifikaciju za Swagger UI
+COPY --from=builder /app/docs ./docs
 
 # Default environment variables (can be overridden in docker-compose)
 ENV DB_USER=root \

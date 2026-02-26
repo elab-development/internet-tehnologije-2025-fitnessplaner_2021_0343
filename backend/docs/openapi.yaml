@@ -117,10 +117,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Workout'
+              $ref: '#/components/schemas/WorkoutRequest'
       responses:
         '200':
           description: Kreiran trening
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+        '400':
+          description: Neispravan zahtev
+        '401':
+          description: Neautorizovano
 
   /api/workouts/update:
     put:
@@ -133,10 +141,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Workout'
+              $ref: '#/components/schemas/WorkoutRequest'
       responses:
         '200':
           description: Ažuriran trening
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+        '400':
+          description: Neispravan zahtev
+        '401':
+          description: Neautorizovano
 
   /api/workouts/delete:
     delete:
@@ -182,10 +198,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProgressEntry'
+              $ref: '#/components/schemas/ProgressRequest'
       responses:
         '200':
           description: Kreiran zapis napretka
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressEntry'
+        '400':
+          description: Neispravan zahtev
+        '401':
+          description: Neautorizovano
 
   /api/progress/update:
     put:
@@ -198,10 +222,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProgressEntry'
+              $ref: '#/components/schemas/ProgressRequest'
       responses:
         '200':
           description: Ažuriran zapis napretka
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressEntry'
+        '400':
+          description: Neispravan zahtev
+        '401':
+          description: Neautorizovano
 
   /api/progress/delete:
     delete:
@@ -219,6 +251,46 @@ paths:
       responses:
         '200':
           description: Obrisan zapis napretka
+
+  /api/food/search:
+    post:
+      summary: Pretraga hrane po barcodu
+      tags: [Food]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FoodSearchRequest'
+      responses:
+        '200':
+          description: Pronađena hrana
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Food'
+        '404':
+          description: Proizvod nije pronađen
+        '401':
+          description: Neautorizovano
+
+  /api/meal-plan:
+    get:
+      summary: Generisanje plana ishrane
+      tags: [Food]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Plan ishrane
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MealPlan'
+        '401':
+          description: Neautorizovano
 
 components:
   securitySchemes:
@@ -301,13 +373,28 @@ components:
       properties:
         id:
           type: integer
-        userId:
+        user_id:
           type: integer
         name:
           type: string
         description:
           type: string
-        date:
+          nullable: true
+        duration:
+          type: integer
+          description: Trajanje u minutama
+        calories_burned:
+          type: number
+          format: float
+          description: Kalorije sagorene
+        workout_date:
+          type: string
+          format: date
+          description: Datum treninga
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
           type: string
           format: date-time
 
@@ -316,22 +403,143 @@ components:
       properties:
         id:
           type: integer
-        userId:
+        user_id:
           type: integer
         weight:
           type: number
           format: float
-        bodyFat:
+          description: Težina u kg
+        body_fat:
           type: number
           format: float
           nullable: true
-        muscleMass:
+          description: Procenat masti u telu
+        muscle_mass:
           type: number
           format: float
           nullable: true
-        date:
+          description: Mišićna masa u kg
+        notes:
+          type: string
+          nullable: true
+          description: Napomene
+        progress_date:
+          type: string
+          format: date
+          description: Datum zapisa napretka
+        created_at:
           type: string
           format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    FoodSearchRequest:
+      type: object
+      required: [barcode]
+      properties:
+        barcode:
+          type: string
+          description: Barcode proizvoda
+
+    Food:
+      type: object
+      properties:
+        name:
+          type: string
+        barcode:
+          type: string
+        calories:
+          type: number
+          format: float
+        protein:
+          type: number
+          format: float
+        carbs:
+          type: number
+          format: float
+        fat:
+          type: number
+          format: float
+
+    MealPlan:
+      type: object
+      properties:
+        userId:
+          type: integer
+        goal:
+          type: string
+          enum: [lose_weight, hypertrophy]
+        foods:
+          type: array
+          items:
+            $ref: '#/components/schemas/Food'
+        totalCalories:
+          type: number
+          format: float
+        totalProtein:
+          type: number
+          format: float
+        totalCarbs:
+          type: number
+          format: float
+        totalFat:
+          type: number
+          format: float
+
+    WorkoutRequest:
+      type: object
+      required: [name, duration, calories_burned, workout_date]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        duration:
+          type: integer
+          minimum: 1
+          description: Trajanje u minutama
+        calories_burned:
+          type: number
+          format: float
+          minimum: 0
+          description: Kalorije sagorene
+        workout_date:
+          type: string
+          format: date
+          description: Datum treninga (YYYY-MM-DD)
+
+    ProgressRequest:
+      type: object
+      required: [weight, progress_date]
+      properties:
+        weight:
+          type: number
+          format: float
+          minimum: 0
+          description: Težina u kg
+        body_fat:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          nullable: true
+          description: Procenat masti u telu
+        muscle_mass:
+          type: number
+          format: float
+          minimum: 0
+          nullable: true
+          description: Mišićna masa u kg
+        notes:
+          type: string
+          nullable: true
+          description: Napomene
+        progress_date:
+          type: string
+          format: date
+          description: Datum zapisa napretka (YYYY-MM-DD)
 
 
 

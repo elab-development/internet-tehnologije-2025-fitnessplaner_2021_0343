@@ -2,6 +2,8 @@ package routes
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"backend/controllers"
 	"backend/middleware"
@@ -39,6 +41,19 @@ func SetupRoutes() http.Handler {
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
+	})
+
+	// OpenAPI specifikacija za Swagger UI
+	mux.HandleFunc("/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
+		// Učitaj OpenAPI fajl sa diska
+		openAPIPath := filepath.Join("docs", "openapi.yaml")
+		content, err := os.ReadFile(openAPIPath)
+		if err != nil {
+			http.Error(w, "Failed to load OpenAPI specification", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/x-yaml")
+		w.Write(content)
 	})
 
 	// Primena middleware-a

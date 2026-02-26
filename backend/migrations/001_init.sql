@@ -1,6 +1,5 @@
 <<<<<<< HEAD
--- Complete database initialization
--- Run this file to set up the entire database
+-- Inicijalizacija baze
 =======
 >>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
 
@@ -8,7 +7,7 @@ CREATE DATABASE IF NOT EXISTS app_db;
 USE app_db;
 
 <<<<<<< HEAD
--- Create users table with role column
+    
 =======
 -- Kreiranje tabele usera sa kolonom role
 >>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
@@ -26,7 +25,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 <<<<<<< HEAD
--- Create workouts table
+    
 =======
 -- Kreiranje tabele za vezbe
 >>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
@@ -46,7 +45,7 @@ CREATE TABLE IF NOT EXISTS workouts (
 );
 
 <<<<<<< HEAD
--- Create progress table
+    
 =======
 -- Kreiranje tabele za progres
 >>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608

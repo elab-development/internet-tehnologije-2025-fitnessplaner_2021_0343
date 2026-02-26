@@ -131,11 +131,11 @@ describe('LoginPage', () => {
     const button = screen.getByRole('button', { name: /login/i });
     fireEvent.click(button);
 
-    // During loading
+    // Tokom loading-a
     expect(button).toBeDisabled();
     expect(screen.getByText(/logging in\.\.\./i)).toBeInTheDocument();
 
-    // Finish login
+    // Zavrsi login
     resolveLogin!();
 
     await waitFor(() => {

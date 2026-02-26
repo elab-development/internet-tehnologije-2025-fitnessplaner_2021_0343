@@ -11,7 +11,7 @@ const ProfilePage: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Fetch profile on mount
+
   useEffect(() => {
     fetchProfile();
   }, []);

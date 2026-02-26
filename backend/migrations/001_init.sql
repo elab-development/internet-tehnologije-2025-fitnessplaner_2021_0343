@@ -1,9 +1,22 @@
+<<<<<<< HEAD
 -- Kompletna inicijalizacija baze podataka
 -- Pokreni ovaj fajl da postaviš celu bazu podataka
+=======
+<<<<<<< HEAD
+-- Inicijalizacija baze
+=======
+>>>>>>> 4dcc7f38d3ca50ba631e57486728f6fe45021608
+>>>>>>> 7bd8328a2f3e453abbb64671ca0e40634a9cdef7
 
 CREATE DATABASE IF NOT EXISTS app_db;
 USE app_db;
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    
+=======
+>>>>>>> 7bd8328a2f3e453abbb64671ca0e40634a9cdef7
 -- Kreiranje tabele usera sa kolonom role
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -20,6 +33,12 @@ CREATE TABLE IF NOT EXISTS users (
     INDEX idx_role (role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    
+=======
+>>>>>>> 7bd8328a2f3e453abbb64671ca0e40634a9cdef7
 -- Kreiranje tabele za vezbe
 CREATE TABLE IF NOT EXISTS workouts (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -36,6 +55,12 @@ CREATE TABLE IF NOT EXISTS workouts (
     INDEX idx_workout_date (workout_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    
+=======
+>>>>>>> 7bd8328a2f3e453abbb64671ca0e40634a9cdef7
 -- Kreiranje tabele za progres
 CREATE TABLE IF NOT EXISTS progress (
     id INT AUTO_INCREMENT PRIMARY KEY,

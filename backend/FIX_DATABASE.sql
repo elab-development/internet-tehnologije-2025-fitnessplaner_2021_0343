@@ -1,12 +1,12 @@
--- Fix Database - Recreate all tables with correct structure
+
 USE app_db;
 
--- Drop existing tables
+-- Dropovanje postojećih tabela
 DROP TABLE IF EXISTS progress;
 DROP TABLE IF EXISTS workouts;
 DROP TABLE IF EXISTS users;
 
--- Create users table
+-- Kreiranje users tabele
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE users (
     INDEX idx_role (role)
 );
 
--- Create workouts table with ALL required columns
+-- Kreiranje workouts tabele
 CREATE TABLE workouts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE workouts (
     INDEX idx_workout_date (workout_date)
 );
 
--- Create progress table with ALL required columns
+-- Kreiranje progress tabele
 CREATE TABLE progress (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -52,14 +52,14 @@ CREATE TABLE progress (
     INDEX idx_progress_date (progress_date)
 );
 
--- Verify tables were created
+-- Verifikovanje da su tabele kreirane
 SELECT 'Tables created successfully!' AS Status;
 SHOW TABLES;
 
--- Show structure of workouts table
+-- Prikaz strukture workouts tabele
 DESCRIBE workouts;
 
--- Show structure of progress table
+-- Prikaz strukture progress tabele
 DESCRIBE progress;
 
 
